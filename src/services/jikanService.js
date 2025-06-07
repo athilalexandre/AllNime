@@ -35,9 +35,9 @@ export const getAnimeDetailsById = async (id) => {
 export const getCurrentSeasonAnimes = async (page = 1, limit = 6) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/seasons/now`, {
-      params: { page, limit, sfw: true, filter: 'tv' } // Adicionado filter: 'tv' para focar em séries de TV
+      params: { page, limit, sfw: true, filter: 'tv' }
     });
-    return response.data; // Contém { data: [], pagination: {} }
+    return response.data;
   } catch (error) {
     console.error('Erro ao buscar animes da temporada da Jikan API:', error.response?.data || error.message);
     throw error;
@@ -47,11 +47,40 @@ export const getCurrentSeasonAnimes = async (page = 1, limit = 6) => {
 export const getTopRatedAnimes = async (page = 1, limit = 6) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/top/anime`, {
-      params: { page, limit, sfw: true, type: 'tv' } // Adicionado type: 'tv'
+      params: { page, limit, sfw: true, type: 'tv' }
     });
-    return response.data; // Contém { data: [], pagination: {} }
+    return response.data;
   } catch (error) {
     console.error('Erro ao buscar top animes da Jikan API:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getAnimeGenres = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/genres/anime`);
+    return response.data.data; // Array de objetos de gênero
+  } catch (error) { // Corrigido o posicionamento do catch
+    console.error('Erro ao buscar gêneros da Jikan API:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getAnimes = async (page = 1, limit = 18, genreId = null) => {
+  const params = {
+    page,
+    limit,
+    sfw: true,
+    type: 'tv', // Focar em séries de TV por padrão
+  };
+  if (genreId) {
+    params.genres = genreId;
+  }
+  try {
+    const response = await axios.get(`${API_BASE_URL}/anime`, { params });
+    return response.data; // Contém { data: [], pagination: {} }
+  } catch (error) {
+    console.error('Erro ao buscar animes da Jikan API:', error.response?.data || error.message);
     throw error;
   }
 };
