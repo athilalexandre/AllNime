@@ -2,17 +2,19 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getAnimeDetailsById } from '../services/jikanService';
-import { getAnimeWatchInfo } from '../services/consumetService'; // Será criado
+import { getAnimeWatchInfo } from '../services/consumetService';
 import { Star } from 'lucide-react'; // Ícone de estrela
+import WatchlistControls from '../components/features/anime-detail/WatchlistControls'; // Adicionar import
 
 const AnimeDetailPage = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // id é string aqui
   const [anime, setAnime] = useState(null);
   const [streamingEpisodes, setStreamingEpisodes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userRating, setUserRating] = useState(0);
   const [userOpinion, setUserOpinion] = useState('');
+  const [saveStatus, setSaveStatus] = useState({ message: '', type: '' }); // type: 'success' ou 'error'
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -81,17 +83,17 @@ const AnimeDetailPage = () => {
   }, [id]);
 
   const handleSaveRating = () => {
-    // Envolver em try-catch ou verificar 'typeof window'.
     if (typeof window !== 'undefined' && window.localStorage) {
-        const ratingData = { rating: userRating, opinion: userOpinion };
-        localStorage.setItem(`animeRating_${id}`, JSON.stringify(ratingData));
-        alert('Avaliação salva!'); // Simples feedback
+      const ratingData = { rating: userRating, opinion: userOpinion };
+      localStorage.setItem(`animeRating_${id}`, JSON.stringify(ratingData));
+      setSaveStatus({ message: 'Avaliação salva com sucesso!', type: 'success' });
     } else {
-        console.warn("localStorage não disponível para salvar avaliação.");
-        // Poderia dar um feedback diferente para o usuário se fosse uma PWA real offline
-        // ou se o localStorage estivesse desabilitado.
-        alert('localStorage não disponível. Avaliação não pôde ser salva.');
+      console.warn("localStorage não disponível para salvar avaliação.");
+      setSaveStatus({ message: 'LocalStorage não disponível. Avaliação não pôde ser salva.', type: 'error' });
     }
+    setTimeout(() => {
+      setSaveStatus({ message: '', type: '' });
+    }, 3000);
   };
 
   const StarRating = () => (
@@ -129,6 +131,9 @@ const AnimeDetailPage = () => {
           <h2 className="text-2xl font-semibold mt-6 mb-2 text-text-main-light dark:text-text-main-dark">Sinopse</h2>
           <p className="text-text-main-light dark:text-text-main-dark leading-relaxed mb-6 whitespace-pre-wrap">{anime.synopsis || 'Sinopse não disponível.'}</p>
 
+          {/* Controles de Watchlist */}
+          {id && <WatchlistControls animeId={Number(id)} />} {/* Passar id convertido para número */}
+
           {streamingEpisodes.length > 0 && (
             <>
               <h2 className="text-2xl font-semibold mt-6 mb-2 text-text-main-light dark:text-text-main-dark">Assistir Agora (Exemplo)</h2>
@@ -154,6 +159,15 @@ const AnimeDetailPage = () => {
           >
             Salvar Avaliação
           </button>
+          {saveStatus.message && (
+            <div className={`mt-4 text-sm font-medium p-3 rounded-md transition-opacity duration-300 ${
+              saveStatus.type === 'success'
+                ? 'bg-green-100 text-green-700 dark:bg-green-700/30 dark:text-green-300'
+                : 'bg-red-100 text-red-700 dark:bg-red-700/30 dark:text-red-300'
+            } ${saveStatus.message ? 'opacity-100' : 'opacity-0'}`}>
+              {saveStatus.message}
+            </div>
+          )}
         </div>
       </div>
     </div>

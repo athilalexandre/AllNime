@@ -1,0 +1,171 @@
+// src/pages/ExplorePage.jsx
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { getAnimes, getAnimeGenres } from '../services/jikanService';
+import SkeletonCard from '../components/common/SkeletonCard';
+import { Filter, ChevronLeft, ChevronRight, SearchX } from 'lucide-react';
+
+const ITEMS_PER_PAGE = 18; // Jikan V4 suporta até 25, mas 18 é bom para grid 6x3
+
+const ExplorePage = () => {
+  const [animes, setAnimes] = useState([]);
+  const [genres, setGenres] = useState([]);
+  const [selectedGenre, setSelectedGenre] = useState(''); // Armazena o ID do gênero
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationData, setPaginationData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Buscar gêneros
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const genreData = await getAnimeGenres();
+        setGenres(genreData || []);
+      } catch (err) {
+        console.error("Erro ao buscar gêneros:", err);
+        // Não crítico se falhar, o filtro apenas não aparecerá ou estará vazio
+      }
+    };
+    fetchGenres();
+  }, []);
+
+  // Buscar animes
+  const fetchAnimes = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    // Scroll to top quando uma nova busca é feita
+    if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    try {
+      const response = await getAnimes(currentPage, ITEMS_PER_PAGE, selectedGenre || null);
+      setAnimes(response.data || []);
+      setPaginationData(response.pagination || null);
+    } catch (err) {
+      console.error("Erro ao buscar animes para explorar:", err);
+      setError("Não foi possível carregar os animes. Tente novamente mais tarde.");
+      setAnimes([]);
+      setPaginationData(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPage, selectedGenre]);
+
+  useEffect(() => {
+    fetchAnimes();
+  }, [fetchAnimes]);
+
+  const handleGenreChange = (event) => {
+    setSelectedGenre(event.target.value);
+    setCurrentPage(1); // Resetar para a primeira página ao mudar o gênero
+  };
+
+  const handleNextPage = () => {
+    if (paginationData?.has_next_page) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
+    }
+  };
+
+  const totalItems = paginationData?.items?.total || 0;
+  const lastPage = paginationData?.last_visible_page || 1;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4 pb-4 border-b border-gray-300 dark:border-gray-700">
+        <div className="flex items-center space-x-3">
+          <Filter size={32} className="text-primary-light dark:text-primary-dark" />
+          <h1 className="text-3xl font-bold text-text-main-light dark:text-text-main-dark">
+            Explorar Animes
+          </h1>
+        </div>
+        {genres.length > 0 && (
+          <select
+            value={selectedGenre}
+            onChange={handleGenreChange}
+            className="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-card-light dark:bg-card-dark text-text-main-light dark:text-text-main-dark focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark outline-none w-full sm:w-auto"
+            // Adicionado w-full sm:w-auto para melhor responsividade
+          >
+            <option value="">Todos os Gêneros</option>
+            {genres.map(genre => (
+              <option key={genre.mal_id} value={genre.mal_id}>
+                {genre.name} ({genre.count})
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {error && <p className="text-center text-red-500 dark:text-red-400 p-4 col-span-full">{error}</p>}
+      {/* Adicionado col-span-full aqui também para o caso de erro */}
+
+      {isLoading && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+          {Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => <SkeletonCard key={index} />)}
+        </div>
+      )}
+
+      {!isLoading && !error && animes.length === 0 && (
+        <div className="col-span-full text-center py-10 bg-card-light dark:bg-card-dark rounded-lg shadow">
+          <SearchX size={48} className="mx-auto text-text-muted-light dark:text-text-muted-dark mb-4" />
+          <p className="text-xl text-text-muted-light dark:text-text-muted-dark">
+            Nenhum anime encontrado com os filtros atuais.
+          </p>
+        </div>
+      )}
+
+      {!isLoading && !error && animes.length > 0 && (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+            {animes.map(anime => (
+              <Link to={`/anime/${anime.mal_id}`} key={anime.mal_id} className="block group">
+                <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg overflow-hidden transform transition-all duration-300 ease-in-out group-hover:scale-105 group-hover:shadow-xl">
+                  <img
+                    src={anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url}
+                    alt={anime.title}
+                    className="w-full h-64 sm:h-72 object-cover"
+                  />
+                  <div className="p-3 sm:p-4">
+                    <h3 className="text-sm sm:text-md font-semibold text-text-main-light dark:text-text-main-dark truncate group-hover:text-primary-light dark:group-hover:text-primary-dark" title={anime.title}>
+                      {anime.title}
+                    </h3>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* Paginação */}
+          {paginationData && totalItems > ITEMS_PER_PAGE && ( // Mostrar paginação apenas se houver mais itens do que o limite por página
+            <div className="flex justify-center items-center space-x-2 sm:space-x-4 mt-8 pt-4 border-t border-gray-300 dark:border-gray-700">
+              <button
+                onClick={handlePrevPage}
+                disabled={currentPage === 1 || isLoading}
+                className="px-3 py-2 sm:px-4 bg-primary-light hover:bg-opacity-80 dark:bg-primary-dark dark:hover:bg-opacity-80 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center text-sm sm:text-base"
+              >
+                <ChevronLeft size={20} className="mr-1" /> Anterior
+              </button>
+              <span className="text-text-main-light dark:text-text-main-dark text-sm sm:text-base">
+                Página {currentPage} de {lastPage > 0 ? lastPage : 1}
+              </span>
+              <button
+                onClick={handleNextPage}
+                disabled={!paginationData?.has_next_page || isLoading}
+                className="px-3 py-2 sm:px-4 bg-primary-light hover:bg-opacity-80 dark:bg-primary-dark dark:hover:bg-opacity-80 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center text-sm sm:text-base"
+              >
+                Próxima <ChevronRight size={20} className="ml-1" />
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+export default ExplorePage;
