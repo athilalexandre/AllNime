@@ -114,7 +114,7 @@ const AnimeDetailPage = () => {
     <div className="container mx-auto p-4"> {/* Removido text-gray-900 dark:text-gray-100 */}
       <Link to="/" className="text-primary-light dark:text-primary-dark hover:underline mb-4 inline-block">&larr; Voltar para a busca</Link>
       <div className="md:flex md:space-x-8">
-        <div className="md:w-1/3 mb-6 md:mb-0">
+        <div className="w-full max-w-xs sm:max-w-sm mx-auto md:w-1/3 md:max-w-none md:mx-0 mb-6 md:mb-0">
           <img src={anime.images?.jpg?.large_image_url} alt={anime.title} className="rounded-lg shadow-lg w-full" />
         </div>
         <div className="md:w-2/3">
@@ -146,7 +146,7 @@ const AnimeDetailPage = () => {
             value={userOpinion}
             onChange={(e) => setUserOpinion(e.target.value)}
             placeholder="Sua opinião sobre este anime..."
-            className="w-full mt-4 p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-card-light dark:bg-card-dark text-text-main-light dark:text-text-main-dark focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark outline-none min-h-[100px] transition-colors duration-150"
+            className="w-full mt-4 p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-card-light dark:bg-card-dark text-text-main-light dark:text-text-main-dark focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark outline-none min-h-[100px] resize-y transition-colors duration-150"
           />
           <button
             onClick={handleSaveRating}

@@ -31,3 +31,27 @@ export const getAnimeDetailsById = async (id) => {
     throw error;
   }
 };
+
+export const getCurrentSeasonAnimes = async (page = 1, limit = 6) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/seasons/now`, {
+      params: { page, limit, sfw: true, filter: 'tv' } // Adicionado filter: 'tv' para focar em séries de TV
+    });
+    return response.data; // Contém { data: [], pagination: {} }
+  } catch (error) {
+    console.error('Erro ao buscar animes da temporada da Jikan API:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getTopRatedAnimes = async (page = 1, limit = 6) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/top/anime`, {
+      params: { page, limit, sfw: true, type: 'tv' } // Adicionado type: 'tv'
+    });
+    return response.data; // Contém { data: [], pagination: {} }
+  } catch (error) {
+    console.error('Erro ao buscar top animes da Jikan API:', error.response?.data || error.message);
+    throw error;
+  }
+};
