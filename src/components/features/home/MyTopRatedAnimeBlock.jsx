@@ -2,8 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getAnimeDetailsById } from '../../../services/jikanService'; // Ajustar caminho
-import SkeletonCard from '../../common/SkeletonCard'; // Ajustar caminho
 import { Star } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/autoplay';
 
 const MyTopRatedAnimeBlock = () => {
   const [myTopAnimes, setMyTopAnimes] = useState([]);
@@ -34,17 +38,10 @@ const MyTopRatedAnimeBlock = () => {
             console.error(`Erro ao parsear rating do localStorage para chave ${key}:`, e);
             return null;
           }
-        }).filter(anime => anime && typeof anime.userRating === 'number' && anime.userRating >= 4); // Filtrar por nota >= 4
+        }).filter(anime => anime && typeof anime.userRating === 'number' && anime.userRating >= 4);
 
-        // Ordenar por nota (decrescente) e pegar os top 6
         ratedAnimesFromStorage.sort((a, b) => b.userRating - a.userRating);
-        ratedAnimesFromStorage = ratedAnimesFromStorage.slice(0, 6);
-      } else {
-        // localStorage não disponível
-        setMyTopAnimes([]);
-        setIsLoading(false);
-        // setError("localStorage não está disponível para carregar seus favoritos."); // Opcional
-        return;
+        ratedAnimesFromStorage = ratedAnimesFromStorage.slice(0, 10);
       }
 
       if (ratedAnimesFromStorage.length === 0) {
@@ -55,7 +52,7 @@ const MyTopRatedAnimeBlock = () => {
 
       const animeDetailsPromises = ratedAnimesFromStorage.map(ratedAnime =>
         getAnimeDetailsById(ratedAnime.id).then(detailsResponse => ({
-          ...detailsResponse.data, // mal_id, title, images, etc. já estão aqui
+          ...detailsResponse.data,
           userRating: ratedAnime.userRating,
           userOpinion: ratedAnime.userOpinion,
         })).catch(err => {
@@ -87,12 +84,13 @@ const MyTopRatedAnimeBlock = () => {
   }
 
   if (isLoading) {
-     return (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-            {Array.from({ length: Math.min(6, myTopAnimes.length || 6) }).map((_, index) => <SkeletonCard key={index} />)}
-            {/* Ajustado length do skeleton para no máximo 6 ou o número de animes que seriam carregados se já soubéssemos */}
-        </div>
-     );
+    return (
+      <div className="flex space-x-4 overflow-x-auto pb-2">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} className="min-w-[180px] h-72 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+        ))}
+      </div>
+    );
   }
 
   if (myTopAnimes.length === 0) {
@@ -106,30 +104,45 @@ const MyTopRatedAnimeBlock = () => {
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+    <Swiper
+      modules={[Navigation, Autoplay]}
+      slidesPerView={4}
+      spaceBetween={20}
+      navigation
+      autoplay={{ delay: 2500, disableOnInteraction: false }}
+      loop
+      breakpoints={{
+        320: { slidesPerView: 1.2 },
+        640: { slidesPerView: 2.2 },
+        1024: { slidesPerView: 4 },
+      }}
+      className="!pb-8"
+    >
       {myTopAnimes.map(anime => (
-        <Link to={`/anime/${anime.mal_id}`} key={anime.mal_id} className="block group">
-          <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg overflow-hidden transform transition-all duration-300 ease-in-out group-hover:scale-105 group-hover:shadow-xl">
-            <img
-              src={anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url}
-              alt={anime.title}
-              className="w-full h-64 sm:h-72 object-cover"
-            />
-            <div className="p-3 sm:p-4">
-              <h3 className="text-sm sm:text-md font-semibold text-text-main-light dark:text-text-main-dark truncate group-hover:text-primary-light dark:group-hover:text-primary-dark" title={anime.title}>
-                {anime.title}
-              </h3>
-              <div className="flex items-center mt-1">
-                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 mr-1" />
-                <span className="text-xs text-text-muted-light dark:text-text-muted-dark font-semibold">
-                  Sua nota: {anime.userRating}/5
-                </span>
+        <SwiperSlide key={anime.mal_id}>
+          <Link to={`/anime/${anime.mal_id}`} className="block group focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark rounded-lg">
+            <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg overflow-hidden group-hover:scale-105 transition">
+              <img
+                src={anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url}
+                alt={anime.title}
+                className="w-full h-64 object-cover"
+                loading="lazy"
+              />
+              <div className="p-2">
+                <h3 className="text-xs font-semibold truncate" title={anime.title}>{anime.title}</h3>
+                <div className="flex items-center mt-1">
+                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 mr-1" />
+                  <span className="text-xs text-text-muted-light dark:text-text-muted-dark font-semibold">
+                    Sua nota: {anime.userRating}/5
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </Link>
+          </Link>
+        </SwiperSlide>
       ))}
-    </div>
+    </Swiper>
   );
 };
+
 export default MyTopRatedAnimeBlock;
