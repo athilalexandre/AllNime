@@ -29,3 +29,52 @@
   }
   */
 }
+
+/* Adicionado para garantir que o texto dentro dos campos de input, textarea e select (incluindo placeholders) seja preto no tema claro e um tom escuro/contraste no tema escuro. */
+input,
+textarea,
+select {
+  color: #1a202c; /* Cor para o texto digitado no tema claro (quase preto) */
+  background-color: #ffffff; /* Fundo branco no tema claro */
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #4a5568; /* Cor para o placeholder no tema claro (um cinza escuro) */
+  opacity: 1; /* Garante que o placeholder não seja transparente no Firefox */
+}
+
+/* Para navegadores Webkit (Chrome, Safari, Edge) */
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: #4a5568;
+}
+
+/* Para Microsoft Edge (legado) */
+input::-ms-input-placeholder,
+textarea::-ms-input-placeholder {
+  color: #4a5568;
+}
+
+/* No dark mode, os inputs devem ter fundo escuro e texto claro */
+.dark input,
+.dark textarea,
+.dark select {
+  color: #e2e8f0; /* Cor para o texto digitado no tema escuro (quase branco) */
+  background-color: #2d3748; /* Fundo escuro para inputs no tema escuro */
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #a0aec0; /* Cor para o placeholder no tema escuro (um cinza claro) */
+}
+
+.dark input::-webkit-input-placeholder,
+.dark textarea::-webkit-input-placeholder {
+  color: #a0aec0;
+}
+
+.dark input::-ms-input-placeholder,
+.dark textarea::-ms-input-placeholder {
+  color: #a0aec0;
+}

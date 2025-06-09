@@ -19,7 +19,12 @@ const SearchResultsPage = () => {
     setIsLoading(true);
     setError(null);
     searchAnimes(searchTerm)
-      .then(data => setResults(data?.data || []))
+      .then(data => {
+        const filteredResults = data?.data?.filter(anime =>
+          anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url
+        ) || [];
+        setResults(filteredResults);
+      })
       .catch(() => setError('Erro ao buscar animes.'))
       .finally(() => setIsLoading(false));
   }, [searchTerm]);
@@ -39,7 +44,15 @@ const SearchResultsPage = () => {
             className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform"
             onClick={() => navigate(`/anime/${anime.mal_id}/edit`)}
           >
-            <img src={anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url} alt={anime.title} className="w-full h-64 object-cover" />
+            <img 
+              src={anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url} 
+              alt={anime.title} 
+              className="w-full h-64 object-cover"
+              onError={(e) => {
+                e.target.onerror = null; // Evita loop de erro
+                e.target.src = 'https://via.placeholder.com/250x350?text=No+Image'; // Imagem de placeholder
+              }}
+            />
             <div className="p-3">
               <h3 className="text-md font-semibold truncate mb-1" title={anime.title}>{anime.title}</h3>
               <p className="text-xs text-text-muted-light dark:text-text-muted-dark">Episódios: {anime.episodes || 'N/A'}</p>

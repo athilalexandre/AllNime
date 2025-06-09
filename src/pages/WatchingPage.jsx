@@ -111,6 +111,10 @@ const WatchingPage = () => {
                   src={anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url}
                   alt={anime.title}
                   className="w-full h-64 sm:h-72 object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null; // Evita loop de erro
+                    e.target.src = 'https://via.placeholder.com/250x350?text=No+Image'; // Imagem de placeholder
+                  }}
                 />
                 <div className="p-3 sm:p-4">
                   <h3 className="text-sm sm:text-md font-semibold text-text-main-light dark:text-text-main-dark truncate group-hover:text-primary-light dark:group-hover:text-primary-dark" title={anime.title}>
