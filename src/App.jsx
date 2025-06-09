@@ -9,6 +9,8 @@ import WatchingPage from './pages/WatchingPage';
 import CompletedPage from './pages/CompletedPage';
 import DroppedPage from './pages/DroppedPage';
 import ExplorePage from './pages/ExplorePage'; // Adicionar import
+import SearchResultsPage from './pages/SearchResultsPage';
+import EditAnimePage from './pages/EditAnimePage';
 import './index.css';
 
 function App() {
@@ -20,6 +22,8 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/anime/:id" element={<AnimeDetailPage />} />
+            <Route path="/anime/:id/edit" element={<EditAnimePage />} />
+            <Route path="/search" element={<SearchResultsPage />} />
             <Route path="/my-ratings" element={<MyRatingsPage />} />
             <Route path="/plan-to-watch" element={<PlanToWatchPage />} />
             <Route path="/watching" element={<WatchingPage />} />

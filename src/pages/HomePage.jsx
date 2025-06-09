@@ -1,8 +1,6 @@
 // src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
-// Manter a lógica de busca existente aqui (useState, useEffect para searchAnimes, handleSearchChange, etc.)
-// Importar Search e Link se a busca for mantida aqui.
-import { Link } from 'react-router-dom';    // Para a busca
+import { Link, useNavigate } from 'react-router-dom';    // Para a busca
 import { Search as SearchIcon } from 'lucide-react'; // Para a busca
 import { searchAnimes } from '../services/jikanService'; // Para a busca
 import { getManualAnimes, addManualAnime } from '../services/watchlistStorageService';
@@ -22,6 +20,7 @@ const HomePage = () => {
   const [searchError, setSearchError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [manualAnimes, setManualAnimes] = useState(getManualAnimes());
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!searchTerm.trim()) {
@@ -39,22 +38,10 @@ const HomePage = () => {
     return () => clearTimeout(timerId);
   }, [searchTerm]);
 
-  const handleSearchChange = async (event) => {
-    setSearchTerm(event.target.value);
-    if (event.target.value.trim().length < 2) {
-      setSuggestions([]);
-      return;
-    }
-    setIsSearchLoading(true);
-    setSearchError(null);
-    try {
-      const results = await searchAnimesAniList(event.target.value.trim());
-      setSuggestions(results);
-    } catch (e) {
-      setSearchError('Erro ao buscar animes na AniList');
-    } finally {
-      setIsSearchLoading(false);
-    }
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim().length < 2) return;
+    navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
   };
 
   const handleAddManualAnime = (anime) => {
@@ -101,20 +88,16 @@ const HomePage = () => {
         )}
         <section aria-labelledby="search-title">
           <h2 id="search-title" className="text-2xl font-bold mb-2">Buscar Animes</h2>
-          <div className="flex items-center mb-4">
+          <form className="flex items-center mb-4" onSubmit={handleSearch}>
             <input
               type="text"
               value={searchTerm}
-              onChange={handleSearchChange}
+              onChange={e => setSearchTerm(e.target.value)}
               placeholder="Digite o nome de um anime..."
               className="border border-gray-300 dark:border-gray-600 rounded-l px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
             />
-            {isSearchLoading ? (
-              <span className="ml-2 animate-spin">🔄</span>
-            ) : (
-              <button className="bg-primary-light text-white px-4 py-2 rounded-r font-bold hover:bg-primary-dark transition-colors">Buscar</button>
-            )}
-          </div>
+            <button type="submit" className="bg-primary-light text-white px-4 py-2 rounded-r font-bold hover:bg-primary-dark transition-colors">Buscar</button>
+          </form>
           {searchError && <div className="text-red-500 mb-2">{searchError}</div>}
           {suggestions.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
