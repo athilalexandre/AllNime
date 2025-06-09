@@ -1,11 +1,12 @@
 // Exemplo parcial de AnimeDetailPage.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react'; // Modificar import do React
 import { useParams, Link } from 'react-router-dom';
 import { getAnimeDetailsAniList } from '../services/anilistService'; // Usar AniList
 import { getAnimeWatchInfo } from '../services/consumetService';
 import { Star } from 'lucide-react'; // Ícone de estrela
 import WatchlistControls from '../components/features/anime-detail/WatchlistControls'; // Adicionar import
 import { useLanguage } from '../contexts/LanguageContext.jsx'; // Importar useLanguage
+
 
 const AnimeDetailPage = () => {
   const { id } = useParams(); // id é string aqui
@@ -16,6 +17,10 @@ const AnimeDetailPage = () => {
   const [userRating, setUserRating] = useState(0);
   const [userOpinion, setUserOpinion] = useState('');
   const [saveStatus, setSaveStatus] = useState({ message: '', type: '' }); // type: 'success' ou 'error'
+  const { theme } = useTheme(); // Obter o tema atual (light/dark)
+  const { generatedImage, isGenerating, error: imageError, generateImage, resetImageState } = useShareReviewImage();
+  const [showShareModal, setShowShareModal] = useState(false);
+  // const shareableCardRef = useRef(null); // Ref agora é interna ao SharePreviewModal
 
   const { translate } = useLanguage(); // Usar o hook de linguagem
 
@@ -129,6 +134,7 @@ const AnimeDetailPage = () => {
       </div>
     );
   }
+
 
   const displayImage = anime.coverImage?.large || anime.coverImage?.medium || '';
   const displayTitle = anime.title?.romaji || anime.title?.english || 'N/A';
@@ -341,6 +347,41 @@ const AnimeDetailPage = () => {
                 ))}
               </div>
             </div>
+          )}
+
+          {userRating > 0 && typeof window !== 'undefined' && window.localStorage && localStorage.getItem(`animeRating_${id}`) && ( // Só mostrar se houver avaliação salva
+            <div className="mt-6 pt-6 border-t border-gray-300 dark:border-gray-700">
+              <h3 className="text-xl font-semibold text-text-main-light dark:text-text-main-dark mb-3">
+                Compartilhar Avaliação
+              </h3>
+              <button
+                onClick={handleOpenShareModal}
+                disabled={isGenerating}
+                className="w-full flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-150 disabled:opacity-50"
+              >
+                <Share2 size={18} className="mr-2" />
+                {isGenerating ? 'Gerando Imagem...' : 'Criar Imagem para Compartilhar'}
+              </button>
+              {imageError && <p className="text-sm text-red-500 mt-2">{imageError}</p>}
+            </div>
+          )}
+
+          {/* Modal de Compartilhamento */}
+          {showShareModal && anime && (userRating > 0) && (
+            <SharePreviewModal
+              isOpen={showShareModal}
+              onClose={() => {
+                setShowShareModal(false);
+                resetImageState(); // Limpar imagem/erros ao fechar
+              }}
+              animeDetails={anime}
+              userReview={{ rating: userRating, opinion: userOpinion }} // Passar dados atuais
+              currentTheme={theme}
+              generatedImage={generatedImage}
+              isGenerating={isGenerating}
+              imageError={imageError}
+              onGenerateImage={generateImage} // Passa a função generateImage do hook useShareReviewImage
+            />
           )}
         </div>
       </div>

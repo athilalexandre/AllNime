@@ -1,14 +1,13 @@
-// tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: 'class', // Restaurado
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
-      colors: { // Restaurado
+      colors: {
         'primary-light': '#6D28D9',
         'primary-dark': '#8B5CF6',
         'secondary-light': '#EC4899',
