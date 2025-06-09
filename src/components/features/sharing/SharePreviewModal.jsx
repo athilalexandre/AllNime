@@ -1,7 +1,7 @@
 // src/components/features/sharing/SharePreviewModal.jsx
 import React, { useEffect, useRef } from 'react';
 import ShareableReviewCard from './ShareableReviewCard';
-import { X, Download, Twitter, ShareNetwork, Loader2 } from 'lucide-react';
+import { X, Download, Twitter, Share2, Loader2 } from 'lucide-react';
 
 const SharePreviewModal = ({
   isOpen,
@@ -67,6 +67,9 @@ const SharePreviewModal = ({
         alert("Seu navegador não suporta compartilhar esta imagem diretamente. Tente baixar a imagem e compartilhar manualmente.");
       }
     } catch (error) {
+      if (error.response && error.response.status === 429) {
+        alert('Você fez muitas requisições à API. Por favor, aguarde um pouco e tente novamente.');
+      }
       console.error('Erro ao usar Web Share API:', error);
       alert('Erro ao tentar compartilhar. Tente baixar a imagem.');
     }
@@ -148,7 +151,7 @@ const SharePreviewModal = ({
                 onClick={handleWebShare}
                 className="w-full flex items-center justify-center bg-gray-600 hover:bg-gray-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-md transition-colors"
               >
-                <ShareNetwork size={18} className="mr-2" /> Compartilhar (Nativo)
+                <Share2  size={18} className="mr-2" /> Compartilhar (Nativo)
               </button>
             )}
           </div>
