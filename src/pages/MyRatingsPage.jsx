@@ -100,7 +100,15 @@ const MyRatingsPage = () => {
         {ratedAnimesList.map(anime => (
           <div key={anime.id} className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg overflow-hidden flex flex-col">
             <Link to={`/anime/${anime.id}`} className="block">
-              <img src={anime.imageUrl} alt={anime.title} className="w-full h-48 object-cover" />
+              <img
+                src={anime.imageUrl} 
+                alt={anime.title} 
+                className="w-full h-48 object-cover"
+                onError={(e) => {
+                  e.target.onerror = null; // Evita loop de erro
+                  e.target.src = 'https://via.placeholder.com/250x350?text=No+Image'; // Imagem de placeholder
+                }}
+              />
             </Link>
             <div className="p-4 flex flex-col flex-grow">
               <Link to={`/anime/${anime.id}`} className="block">

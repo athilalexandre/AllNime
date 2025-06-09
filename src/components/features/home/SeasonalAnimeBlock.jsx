@@ -7,6 +7,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/autoplay';
 import { GraphQLClient, gql } from 'graphql-request';
+import { Link } from 'react-router-dom';
 
 const endpoint = 'https://graphql.anilist.co';
 const client = new GraphQLClient(endpoint);
@@ -101,26 +102,32 @@ const SeasonalAnimeBlock = () => {
       className="!pb-8"
     >
       {animes.map(anime => (
-        <SwiperSlide key={anime.id}>
-          <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg overflow-hidden group-hover:scale-105 transition">
-            <img
-              src={anime.coverImage?.large}
-              alt={anime.title.romaji}
-              className="w-full h-64 object-cover"
-              loading="lazy"
-            />
-            <div className="p-2">
-              <h3 className="text-xs font-semibold truncate" title={anime.title.romaji}>{anime.title.romaji}</h3>
-              {anime.averageScore && (
-                <div className="flex items-center mt-1">
-                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 mr-1" />
-                  <span className="text-xs text-text-muted-light dark:text-text-muted-dark font-semibold">
-                    {(anime.averageScore/20).toFixed(1)}/5
-                  </span>
-                </div>
-              )}
+        <SwiperSlide key={anime.id} className="overflow-hidden rounded-lg">
+          <Link to={`/anime/${anime.id}`} className="block group focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark h-full">
+            <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg group-hover:scale-105 transition-transform duration-300 ease-in-out h-full flex flex-col">
+              <img
+                src={anime.coverImage?.large}
+                alt={anime.title.romaji}
+                className="w-full h-64 object-cover"
+                loading="lazy"
+                onError={(e) => {
+                  e.target.onerror = null; // Evita loop de erro
+                  e.target.src = 'https://via.placeholder.com/250x350?text=No+Image'; // Imagem de placeholder
+                }}
+              />
+              <div className="p-2 flex-grow flex flex-col justify-between">
+                <h3 className="text-xs font-semibold truncate" title={anime.title.romaji}>{anime.title.romaji}</h3>
+                {anime.averageScore && (
+                  <div className="flex items-center mt-1">
+                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 mr-1" />
+                    <span className="text-xs text-text-muted-light dark:text-text-muted-dark font-semibold">
+                      {(anime.averageScore/20).toFixed(1)}/5
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          </Link>
         </SwiperSlide>
       ))}
     </Swiper>
