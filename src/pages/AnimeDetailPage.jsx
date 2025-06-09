@@ -1,10 +1,14 @@
 // Exemplo parcial de AnimeDetailPage.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react'; // Modificar import do React
 import { useParams, Link } from 'react-router-dom';
 import { getAnimeDetailsById } from '../services/jikanService';
 import { getAnimeWatchInfo } from '../services/consumetService';
-import { Star } from 'lucide-react'; // Ícone de estrela
-import WatchlistControls from '../components/features/anime-detail/WatchlistControls'; // Adicionar import
+import { Star, Share2 } from 'lucide-react'; // Ícone de estrela e Share2
+import WatchlistControls from '../components/features/anime-detail/WatchlistControls';
+// import ShareableReviewCard from '../components/features/sharing/ShareableReviewCard'; // Não é importado aqui diretamente
+import { useShareReviewImage } from '../hooks/useShareReviewImage';
+import { useTheme } from '../hooks/useTheme'; // Para saber o tema atual
+import SharePreviewModal from '../components/features/sharing/SharePreviewModal'; // Adicionar import
 
 const AnimeDetailPage = () => {
   const { id } = useParams(); // id é string aqui
@@ -15,6 +19,10 @@ const AnimeDetailPage = () => {
   const [userRating, setUserRating] = useState(0);
   const [userOpinion, setUserOpinion] = useState('');
   const [saveStatus, setSaveStatus] = useState({ message: '', type: '' }); // type: 'success' ou 'error'
+  const { theme } = useTheme(); // Obter o tema atual (light/dark)
+  const { generatedImage, isGenerating, error: imageError, generateImage, resetImageState } = useShareReviewImage();
+  const [showShareModal, setShowShareModal] = useState(false);
+  // const shareableCardRef = useRef(null); // Ref agora é interna ao SharePreviewModal
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -96,6 +104,17 @@ const AnimeDetailPage = () => {
     }, 3000);
   };
 
+  const handleOpenShareModal = async () => {
+    // Garante que temos os dados necessários antes de tentar gerar a imagem.
+    // O ShareableReviewCard será renderizado (talvez brevemente de forma oculta ou dentro do modal)
+    // para que o html2canvas possa capturá-lo.
+    // Por ora, vamos apenas preparar para abrir o modal e gerar a imagem.
+    // A lógica de renderizar o card para captura será melhor no modal.
+    resetImageState(); // Limpar estado anterior
+    setShowShareModal(true);
+    // A geração da imagem será acionada dentro do modal de preview, quando o card estiver visível.
+  };
+
   const StarRating = () => (
     <div className="flex space-x-1">
       {[1, 2, 3, 4, 5].map((star) => (
@@ -167,6 +186,41 @@ const AnimeDetailPage = () => {
             } ${saveStatus.message ? 'opacity-100' : 'opacity-0'}`}>
               {saveStatus.message}
             </div>
+          )}
+
+          {userRating > 0 && typeof window !== 'undefined' && window.localStorage && localStorage.getItem(`animeRating_${id}`) && ( // Só mostrar se houver avaliação salva
+            <div className="mt-6 pt-6 border-t border-gray-300 dark:border-gray-700">
+              <h3 className="text-xl font-semibold text-text-main-light dark:text-text-main-dark mb-3">
+                Compartilhar Avaliação
+              </h3>
+              <button
+                onClick={handleOpenShareModal}
+                disabled={isGenerating}
+                className="w-full flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-150 disabled:opacity-50"
+              >
+                <Share2 size={18} className="mr-2" />
+                {isGenerating ? 'Gerando Imagem...' : 'Criar Imagem para Compartilhar'}
+              </button>
+              {imageError && <p className="text-sm text-red-500 mt-2">{imageError}</p>}
+            </div>
+          )}
+
+          {/* Modal de Compartilhamento */}
+          {showShareModal && anime && (userRating > 0) && (
+            <SharePreviewModal
+              isOpen={showShareModal}
+              onClose={() => {
+                setShowShareModal(false);
+                resetImageState(); // Limpar imagem/erros ao fechar
+              }}
+              animeDetails={anime}
+              userReview={{ rating: userRating, opinion: userOpinion }} // Passar dados atuais
+              currentTheme={theme}
+              generatedImage={generatedImage}
+              isGenerating={isGenerating}
+              imageError={imageError}
+              onGenerateImage={generateImage} // Passa a função generateImage do hook useShareReviewImage
+            />
           )}
         </div>
       </div>
