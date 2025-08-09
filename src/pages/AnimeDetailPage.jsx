@@ -5,6 +5,7 @@ import { getAnimeDetailsById } from '../services/jikanService';
 import { getAnimeWatchInfo } from '../services/consumetService';
 import { Star } from 'lucide-react'; // Ícone de estrela
 import WatchlistControls from '../components/features/anime-detail/WatchlistControls'; // Adicionar import
+import ShareControls from '../components/features/sharing/ShareControls';
 
 const AnimeDetailPage = () => {
   const { id } = useParams(); // id é string aqui
@@ -133,6 +134,9 @@ const AnimeDetailPage = () => {
 
           {/* Controles de Watchlist */}
           {id && <WatchlistControls animeId={Number(id)} />} {/* Passar id convertido para número */}
+
+          {/* Controles de Compartilhamento */}
+          <ShareControls anime={anime} />
 
           {streamingEpisodes.length > 0 && (
             <>

@@ -9,6 +9,8 @@ import WatchingPage from './pages/WatchingPage';
 import CompletedPage from './pages/CompletedPage';
 import DroppedPage from './pages/DroppedPage';
 import ExplorePage from './pages/ExplorePage'; // Adicionar import
+import SettingsPage from './pages/SettingsPage';
+import NotFoundPage from './pages/NotFoundPage';
 import './index.css';
 
 function App() {
@@ -26,6 +28,8 @@ function App() {
             <Route path="/completed" element={<CompletedPage />} />
             <Route path="/dropped" element={<DroppedPage />} />
             <Route path="/explore" element={<ExplorePage />} /> {/* Adicionar rota */}
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
       </div>

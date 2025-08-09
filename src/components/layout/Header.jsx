@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import ThemeToggle from '../common/ThemeToggle';
 import DropdownMenu from '../common/DropdownMenu';
-import { Star, Eye, PlaySquare, CheckCheck, ArchiveX, Compass } from 'lucide-react'; // Ícones para o dropdown e Explorar
+import { Star, Eye, PlaySquare, CheckCheck, ArchiveX, Compass, Settings } from 'lucide-react'; // Ícones para o dropdown e Explorar
 
 const Header = () => {
   const myListsItems = [
@@ -28,6 +28,12 @@ const Header = () => {
                 className="flex items-center text-sm sm:text-base text-text-main-light dark:text-text-main-dark hover:text-primary-light dark:hover:text-primary-dark transition-colors px-3 py-2 rounded-md"
               >
                 <Compass size={18} className="mr-1 sm:mr-2" /> Explorar
+              </Link>
+              <Link
+                to="/settings"
+                className="flex items-center text-sm sm:text-base text-text-main-light dark:text-text-main-dark hover:text-primary-light dark:hover:text-primary-dark transition-colors px-3 py-2 rounded-md"
+              >
+                <Settings size={18} className="mr-1 sm:mr-2" /> Configurações
               </Link>
             </nav>
             <DropdownMenu label="Minhas Listas" items={myListsItems} />

@@ -39,14 +39,14 @@ Anime Master é um aplicativo web moderno que permite aos usuários pesquisar in
     *   **Jikan API:** (`https://api.jikan.moe/v4`) - Fonte principal para informações e busca de animes.
     *   **Consumet API:** (Utilizando o wrapper em `https://consumet-api-production-host.vercel.app` durante o desenvolvimento) - Para buscar links de streaming (experimental).
 
-## 🚀 Como Rodar o Projeto Localmente
+## 🚀 Como Rodar o Projeto (Local e Deploy)
 
 Siga os passos abaixo para configurar e rodar o Anime Master na sua máquina local:
 
 **Pré-requisitos:**
 
-*   Node.js (versão LTS recomendada: v18.x ou v20.x. O projeto foi desenvolvido com v18.x, mas algumas dependências podem sugerir v20+)
-*   npm (geralmente incluído com o Node.js) ou yarn
+* Node.js LTS (recomendado: v18.x ou v20.x)
+* npm (ou yarn)
 
 **Passos:**
 
@@ -67,15 +67,39 @@ Siga os passos abaixo para configurar e rodar o Anime Master na sua máquina loc
     # yarn install
     ```
 
-4.  **Inicie o servidor de desenvolvimento:**
+4.  **Rodar no desenvolvimento:**
     ```bash
     npm run dev
     # ou, se você usa yarn:
     # yarn dev
     ```
 
-5.  **Abra no navegador:**
+5.  **Abrir no navegador:**
     O projeto estará disponível em `http://localhost:5173` (ou outra porta indicada pelo Vite no seu terminal).
+
+### Build de produção
+
+```
+npm run build
+npm run preview
+```
+
+O build é gerado em `dist/` (Vite). O `preview` serve a versão de produção localmente.
+
+### Deploy na Vercel
+
+O projeto inclui `vercel.json` configurando:
+
+- build estático via `@vercel/static-build`
+- rewrites de SPA para `index.html`
+
+Passos:
+
+1. Instalar a CLI: `npm i -g vercel`
+2. Fazer login: `vercel login`
+3. Deploy: `vercel` (primeira vez) e depois `vercel --prod`
+
+Se já conectado ao GitHub, basta pushar na `main` que a Vercel faz o build. Caso use outro provider, confira se o comando de build é `npm run build` e a pasta de saída é `dist`.
 
 ## 📂 Estrutura do Projeto (Simplificada)
 
