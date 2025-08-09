@@ -1,7 +1,7 @@
 // src/pages/ExplorePage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { searchAnimesAniList } from '../services/anilistService'; // Usar AniList
+import { searchAnimes } from '../services/jikanService';
 import SkeletonCard from '../components/common/SkeletonCard';
 import { Filter, ChevronLeft, ChevronRight, SearchX } from 'lucide-react';
 
@@ -35,11 +35,15 @@ const ExplorePage = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     try {
-      const response = await searchAnimesAniList(debouncedSearchQuery, currentPage, ITEMS_PER_PAGE);
-      // A estrutura da resposta da AniList é diferente. Precisa se adaptar.
-      // Assumindo que a resposta é { data: { Page: { media: [], pageInfo: {} } } }
-      setAnimes(response.media || []);
-      setPaginationData(response.pageInfo || null);
+      const response = await searchAnimes(debouncedSearchQuery);
+      // Ajusta paginação simples com base no resultado retornado
+      setAnimes(response.data || []);
+      setPaginationData({
+        current_page: 1,
+        has_next_page: false,
+        items: { total: (response.data || []).length },
+        last_visible_page: 1,
+      });
     } catch (err) {
       console.error("Erro ao buscar animes para explorar:", err);
       setError("Não foi possível carregar os animes. Tente novamente mais tarde.");
@@ -71,8 +75,8 @@ const ExplorePage = () => {
     }
   };
 
-  const totalItems = paginationData?.total || 0;
-  const lastPage = paginationData?.lastPage || 1;
+  const totalItems = paginationData?.items?.total || 0;
+  const lastPage = paginationData?.last_visible_page || 1;
 
   return (
     <div className="space-y-6">
@@ -150,7 +154,7 @@ const ExplorePage = () => {
               </span>
               <button
                 onClick={handleNextPage}
-                disabled={!paginationData?.hasNextPage || isLoading}
+                 disabled={!paginationData?.has_next_page || isLoading}
                 className="px-3 py-2 sm:px-4 bg-primary-light hover:bg-opacity-80 dark:bg-primary-dark dark:hover:bg-opacity-80 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center text-sm sm:text-base"
               >
                 Próxima <ChevronRight size={20} className="ml-1" />

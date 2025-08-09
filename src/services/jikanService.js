@@ -15,7 +15,10 @@ export const searchAnimes = async (query) => {
         // sort: "desc"
       }
     });
-    return response.data; // A API Jikan V4 encapsula os resultados em um campo 'data'
+    const filtered = Array.isArray(response.data?.data)
+      ? response.data.data.filter(item => item?.approved !== false)
+      : [];
+    return { ...response.data, data: filtered };
   } catch (error) {
     console.error('Erro ao buscar dados da Jikan API:', error.response?.data || error.message);
     throw error; // Re-lançar o erro para ser tratado no componente
@@ -25,8 +28,17 @@ export const searchAnimes = async (query) => {
 export const getAnimeDetailsById = async (id) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/anime/${id}/full`);
-    return response.data; // A API Jikan V4 encapsula em 'data'
+    return response.data;
   } catch (error) {
+    if (error?.response?.status === 404) {
+      try {
+        const fallback = await axios.get(`${API_BASE_URL}/anime/${id}`);
+        return fallback.data;
+      } catch (fallbackError) {
+        console.error(`Fallback falhou ao buscar anime ${id}:`, fallbackError.response?.data || fallbackError.message);
+        throw fallbackError;
+      }
+    }
     console.error(`Erro ao buscar detalhes do anime ${id} da Jikan API:`, error.response?.data || error.message);
     throw error;
   }
@@ -78,7 +90,10 @@ export const getAnimes = async (page = 1, limit = 18, genreId = null) => {
   }
   try {
     const response = await axios.get(`${API_BASE_URL}/anime`, { params });
-    return response.data; // Contém { data: [], pagination: {} }
+    const filtered = Array.isArray(response.data?.data)
+      ? response.data.data.filter(item => item?.approved !== false)
+      : [];
+    return { ...response.data, data: filtered };
   } catch (error) {
     console.error('Erro ao buscar animes da Jikan API:', error.response?.data || error.message);
     throw error;
