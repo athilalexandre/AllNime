@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "vercel-build": "ROLLUP_USE_NODEJS=true vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
