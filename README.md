@@ -1,6 +1,6 @@
-# Anime Master 🧩
+# AllNime 🧩
 
-Anime Master é um aplicativo web moderno que permite aos usuários pesquisar informações sobre animes, visualizar detalhes, assistir (quando disponível) e manter um registro pessoal de avaliações.
+AllNime é um aplicativo web moderno que permite aos usuários pesquisar informações sobre animes, visualizar detalhes, assistir (quando disponível) e manter um registro pessoal de avaliações.
 
 ## ✨ Funcionalidades Principais
 
@@ -41,7 +41,7 @@ Anime Master é um aplicativo web moderno que permite aos usuários pesquisar in
 
 ## 🚀 Como Rodar o Projeto (Local e Deploy)
 
-Siga os passos abaixo para configurar e rodar o Anime Master na sua máquina local:
+Siga os passos abaixo para configurar e rodar o AllNime na sua máquina local:
 
 **Pré-requisitos:**
 
@@ -123,7 +123,7 @@ A estrutura principal do código-fonte na pasta `src/` é organizada da seguinte
 
 ## 🤝 Contribuindo (Exemplo)
 
-Contribuições são bem-vindas! Se você deseja melhorar o Anime Master:
+Contribuições são bem-vindas! Se você deseja melhorar o AllNime:
 
 1.  Faça um Fork do projeto.
 2.  Crie uma nova Branch (`git checkout -b feature/sua-feature`).
@@ -133,4 +133,4 @@ Contribuições são bem-vindas! Se você deseja melhorar o Anime Master:
 
 ---
 
-Divirta-se explorando o mundo dos animes com o Anime Master!
+Divirta-se explorando o mundo dos animes com o AllNime!

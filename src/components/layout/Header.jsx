@@ -5,9 +5,11 @@ import ThemeToggle from '../common/ThemeToggle';
 import DropdownMenu from '../common/DropdownMenu';
 import { Star, Eye, PlaySquare, CheckCheck, ArchiveX, Compass, Settings } from 'lucide-react';
 import { useLanguage, languages } from '../contexts/LanguageContext.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 const Header = () => {
   const { translate, setLanguage, language } = useLanguage();
+  const { user, loading, signInWithGoogle, logout } = useAuth();
 
   const myListsItems = [
     { label: translate('Meus Avaliados'), to: '/my-ratings', icon: Star },
@@ -22,7 +24,7 @@ const Header = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <Link to="/" className="text-xl sm:text-2xl font-bold text-primary-light dark:text-primary-dark transition-colors hover:opacity-80">
-            Anime Master
+            AllNime
           </Link>
           <div className="flex items-center space-x-1 sm:space-x-2">
             <nav className="hidden sm:flex items-center space-x-1">
@@ -40,6 +42,29 @@ const Header = () => {
               </Link>
             </nav>
             <DropdownMenu label={translate('Minhas Listas')} items={myListsItems} />
+            {/* Auth buttons */}
+            {!loading && (
+              user ? (
+                <div className="flex items-center space-x-2">
+                  {user.photoURL && (
+                    <img src={user.photoURL} alt={user.displayName || 'avatar'} className="w-8 h-8 rounded-full" />
+                  )}
+                  <button
+                    onClick={logout}
+                    className="px-3 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
+                  >
+                    Sair
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={signInWithGoogle}
+                  className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  Login Google
+                </button>
+              )
+            )}
             {/* Language Selection Buttons */}
             <div className="flex space-x-1">
               {Object.keys(languages).map((langKey) => (
