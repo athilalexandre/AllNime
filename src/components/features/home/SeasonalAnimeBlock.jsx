@@ -1,11 +1,53 @@
 // src/components/features/home/SeasonalAnimeBlock.jsx
 import React, { useState, useEffect } from 'react';
+import { Star } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/autoplay';
+import { GraphQLClient, gql } from 'graphql-request';
 import { Link } from 'react-router-dom';
-import { getCurrentSeasonAnimes } from '../../../services/jikanService'; // Ajustar caminho
-import SkeletonCard from '../../common/SkeletonCard'; // Ajustar caminho
+
+const endpoint = 'https://graphql.anilist.co';
+const client = new GraphQLClient(endpoint);
+
+async function getAniListSeasonAnimes() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  let season = 'WINTER';
+  if (month >= 4 && month <= 6) season = 'SPRING';
+  else if (month >= 7 && month <= 9) season = 'SUMMER';
+  else if (month >= 10 && month <= 12) season = 'FALL';
+
+  const SEASON_QUERY = gql`
+    query ($season: MediaSeason, $year: Int) {
+      Page(perPage: 10) {
+        media(season: $season, seasonYear: $year, type: ANIME, sort: POPULARITY_DESC) {
+          id
+          title {
+            romaji
+            native
+          }
+          coverImage {
+            large
+          }
+          averageScore
+          episodes
+          format
+          status
+        }
+      }
+    }
+  `;
+  const variables = { season, year };
+  const data = await client.request(SEASON_QUERY, variables);
+  return data.Page.media;
+}
 
 const SeasonalAnimeBlock = () => {
-  const [seasonalAnimes, setSeasonalAnimes] = useState([]);
+  const [animes, setAnimes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -14,12 +56,11 @@ const SeasonalAnimeBlock = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await getCurrentSeasonAnimes(1, 6); // Pegar 6 animes da primeira página
-        setSeasonalAnimes(response.data || []);
+        const seasonAnimes = await getAniListSeasonAnimes();
+        setAnimes(seasonAnimes);
       } catch (err) {
-        console.error("Erro no SeasonalAnimeBlock:", err);
-        setError("Não foi possível carregar os animes da temporada.");
-        setSeasonalAnimes([]);
+        setError('Não foi possível carregar os animes da temporada.');
+        setAnimes([]);
       } finally {
         setIsLoading(false);
       }
@@ -28,39 +69,69 @@ const SeasonalAnimeBlock = () => {
   }, []);
 
   if (error) {
-    return <p className="col-span-full text-center text-red-500 dark:text-red-400">{error}</p>;
-    // Adicionado col-span-full para que a mensagem de erro ocupe toda a largura do grid.
+    return <div className="text-center text-red-500 dark:text-red-400 col-span-full">{error}</div>;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex space-x-4 overflow-x-auto pb-2">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} className="min-w-[180px] h-72 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  if (animes.length === 0) {
+    return <div className="text-center text-text-muted-light dark:text-text-muted-dark">Nenhum anime encontrado.</div>;
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-      {isLoading && Array.from({ length: 6 }).map((_, index) => <SkeletonCard key={index} />)}
-      {!isLoading && seasonalAnimes.map(anime => (
-        <Link to={`/anime/${anime.mal_id}`} key={anime.mal_id} className="block group">
-          <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg overflow-hidden transform transition-all duration-300 ease-in-out group-hover:scale-105 group-hover:shadow-xl">
-            <img
-              src={anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url}
-              alt={anime.title}
-              className="w-full h-64 sm:h-72 object-cover" // Altura da imagem
-            />
-            <div className="p-3 sm:p-4">
-              <h3 className="text-sm sm:text-md font-semibold text-text-main-light dark:text-text-main-dark truncate group-hover:text-primary-light dark:group-hover:text-primary-dark" title={anime.title}>
-                {anime.title}
-              </h3>
-              {/* Opcional: Gêneros ou outra info curta */}
-              {/* <p className="text-xs text-text-muted-light dark:text-text-muted-dark truncate">
-                {anime.genres?.map(g => g.name).join(', ') || 'N/A'}
-              </p> */}
+    <Swiper
+      modules={[Navigation, Autoplay]}
+      slidesPerView={4}
+      spaceBetween={20}
+      navigation
+      autoplay={{ delay: 2500, disableOnInteraction: false }}
+      loop
+      breakpoints={{
+        320: { slidesPerView: 1.2 },
+        640: { slidesPerView: 2.2 },
+        1024: { slidesPerView: 4 },
+      }}
+      className="!pb-8"
+    >
+      {animes.map(anime => (
+        <SwiperSlide key={anime.id} className="overflow-hidden rounded-lg">
+          <Link to={`/anime/${anime.id}`} className="block group focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark h-full">
+            <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg group-hover:scale-105 transition-transform duration-300 ease-in-out h-full flex flex-col">
+              <img
+                src={anime.coverImage?.large}
+                alt={anime.title.romaji}
+                className="w-full h-64 object-cover"
+                loading="lazy"
+                onError={(e) => {
+                  e.target.onerror = null; // Evita loop de erro
+                  e.target.src = 'https://via.placeholder.com/250x350?text=No+Image'; // Imagem de placeholder
+                }}
+              />
+              <div className="p-2 flex-grow flex flex-col justify-between">
+                <h3 className="text-xs font-semibold truncate" title={anime.title.romaji}>{anime.title.romaji}</h3>
+                {anime.averageScore && (
+                  <div className="flex items-center mt-1">
+                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 mr-1" />
+                    <span className="text-xs text-text-muted-light dark:text-text-muted-dark font-semibold">
+                      {(anime.averageScore/20).toFixed(1)}/5
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </Link>
+          </Link>
+        </SwiperSlide>
       ))}
-      {!isLoading && seasonalAnimes.length === 0 && !error && (
-        <p className="col-span-full text-center text-text-muted-light dark:text-text-muted-dark">
-          Nenhum anime da temporada encontrado.
-        </p>
-      )}
-    </div>
+    </Swiper>
   );
 };
+
 export default SeasonalAnimeBlock;

@@ -1,12 +1,45 @@
 // src/components/features/home/TopRatedAnimeBlock.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getTopRatedAnimes } from '../../../services/jikanService'; // Ajustar caminho
-import SkeletonCard from '../../common/SkeletonCard'; // Ajustar caminho
-import { Star } from 'lucide-react'; // Para exibir a nota
+import { Star } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/autoplay';
+import { GraphQLClient, gql } from 'graphql-request';
+
+const endpoint = 'https://graphql.anilist.co';
+const client = new GraphQLClient(endpoint);
+
+async function getAniListTopAnimes() {
+  const TOP_QUERY = gql`
+    query {
+      Page(perPage: 10) {
+        media(type: ANIME, sort: SCORE_DESC) {
+          id
+          title {
+            romaji
+            native
+          }
+          coverImage {
+            large
+          }
+          averageScore
+          episodes
+          format
+          status
+          seasonYear
+        }
+      }
+    }
+  `;
+  const data = await client.request(TOP_QUERY);
+  return data.Page.media;
+}
 
 const TopRatedAnimeBlock = () => {
-  const [topAnimes, setTopAnimes] = useState([]);
+  const [animes, setAnimes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -15,12 +48,11 @@ const TopRatedAnimeBlock = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await getTopRatedAnimes(1, 6); // Pegar 6 animes da primeira página
-        setTopAnimes(response.data || []);
+        const topAnimes = await getAniListTopAnimes();
+        setAnimes(topAnimes);
       } catch (err) {
-        console.error("Erro no TopRatedAnimeBlock:", err);
-        setError("Não foi possível carregar os animes mais bem avaliados.");
-        setTopAnimes([]);
+        setError('Não foi possível carregar os animes mais bem avaliados.');
+        setAnimes([]);
       } finally {
         setIsLoading(false);
       }
@@ -29,42 +61,69 @@ const TopRatedAnimeBlock = () => {
   }, []);
 
   if (error) {
-    return <p className="text-center text-red-500 dark:text-red-400 col-span-full">{error}</p>;
+    return <div className="text-center text-red-500 dark:text-red-400 col-span-full">{error}</div>;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex space-x-4 overflow-x-auto pb-2">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} className="min-w-[180px] h-72 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  if (animes.length === 0) {
+    return <div className="text-center text-text-muted-light dark:text-text-muted-dark">Nenhum anime encontrado.</div>;
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-      {isLoading && Array.from({ length: 6 }).map((_, index) => <SkeletonCard key={index} />)}
-      {!isLoading && topAnimes.map(anime => (
-        <Link to={`/anime/${anime.mal_id}`} key={anime.mal_id} className="block group">
-          <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg overflow-hidden transform transition-all duration-300 ease-in-out group-hover:scale-105 group-hover:shadow-xl">
-            <img
-              src={anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url}
-              alt={anime.title}
-              className="w-full h-64 sm:h-72 object-cover"
-            />
-            <div className="p-3 sm:p-4">
-              <h3 className="text-sm sm:text-md font-semibold text-text-main-light dark:text-text-main-dark truncate group-hover:text-primary-light dark:group-hover:text-primary-dark" title={anime.title}>
-                {anime.title}
-              </h3>
-              {anime.score && (
-                <div className="flex items-center mt-1">
-                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 mr-1" />
-                  <span className="text-xs text-text-muted-light dark:text-text-muted-dark font-semibold">
-                    {anime.score.toFixed(2)}
-                  </span>
-                </div>
-              )}
+    <Swiper
+      modules={[Navigation, Autoplay]}
+      slidesPerView={4}
+      spaceBetween={20}
+      navigation
+      autoplay={{ delay: 2500, disableOnInteraction: false }}
+      loop
+      breakpoints={{
+        320: { slidesPerView: 1.2 },
+        640: { slidesPerView: 2.2 },
+        1024: { slidesPerView: 4 },
+      }}
+      className="!pb-8"
+    >
+      {animes.map(anime => (
+        <SwiperSlide key={anime.id} className="overflow-hidden rounded-lg">
+          <Link to={`/anime/${anime.id}`} className="block group focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark h-full">
+            <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg group-hover:scale-105 transition-transform duration-300 ease-in-out h-full flex flex-col">
+              <img
+                src={anime.coverImage?.large}
+                alt={anime.title.romaji}
+                className="w-full h-64 object-cover"
+                loading="lazy"
+                onError={(e) => {
+                  e.target.onerror = null; // Evita loop de erro
+                  e.target.src = 'https://placehold.co/250x350/F0F0F0/333333?text=No+Image'; // Alterado para placehold.co
+                }}
+              />
+              <div className="p-2 flex-grow flex flex-col justify-between">
+                <h3 className="text-xs font-semibold truncate" title={anime.title.romaji}>{anime.title.romaji}</h3>
+                {anime.averageScore && (
+                  <div className="flex items-center mt-1">
+                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 mr-1" />
+                    <span className="text-xs text-text-muted-light dark:text-text-muted-dark font-semibold">
+                      {(anime.averageScore/20).toFixed(1)}/5
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </Link>
+          </Link>
+        </SwiperSlide>
       ))}
-      {!isLoading && topAnimes.length === 0 && !error && (
-        <p className="col-span-full text-center text-text-muted-light dark:text-text-muted-dark">
-          Nenhum anime encontrado na lista de mais bem avaliados.
-        </p>
-      )}
-    </div>
+    </Swiper>
   );
 };
+
 export default TopRatedAnimeBlock;
