@@ -5,9 +5,12 @@ import { Eye, Star, RefreshCw } from 'lucide-react';
 import { recommendationService } from '../services/recommendationService.js';
 import { useLanguage } from '../components/contexts/useLanguage';
 import SkeletonCard from '../components/common/SkeletonCard';
+import AdultContentWarning from '../components/ui/AdultContentWarning';
+import { useAdultContent } from '../hooks/useAdultContent';
 
 const RecommendationsPage = () => {
   const { translate } = useLanguage();
+  const { canAccess } = useAdultContent();
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('personal');

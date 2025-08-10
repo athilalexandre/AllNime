@@ -5,8 +5,12 @@ import SearchBar from '../components/features/search/SearchBar';
 import MyTopRatedAnimeBlock from '../components/features/home/MyTopRatedAnimeBlock';
 import SeasonalAnimeBlock from '../components/features/home/SeasonalAnimeBlock';
 import TopRatedAnimeBlock from '../components/features/home/TopRatedAnimeBlock';
+import AdultContentWarning from '../components/ui/AdultContentWarning';
+import { useAdultContent } from '../hooks/useAdultContent';
 
 const HomePage = () => {
+  const { canAccess } = useAdultContent();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       {/* Hero Section */}
@@ -28,6 +32,21 @@ const HomePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Aviso de Conteúdo Adulto */}
+      {!canAccess() && (
+        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <AdultContentWarning
+              title="Conteúdo Adulto Filtrado"
+              message="Os animes exibidos foram filtrados para excluir conteúdo adulto. Faça login e verifique se você é maior de 18 anos para acessar todos os animes."
+              showDetails={true}
+              onAction={() => window.location.href = '/'}
+              actionText="Fazer Login"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Features Grid */}
       <div className="px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8">

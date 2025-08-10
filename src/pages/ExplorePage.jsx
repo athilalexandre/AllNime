@@ -5,6 +5,8 @@ import { Search, Filter, Star, TrendingUp, Sparkles, Eye } from 'lucide-react';
 import { getAnimeGenres, getAnimes, getTopRatedAnimes } from '../services/jikanService';
 import SearchBar from '../components/features/search/SearchBar';
 import { useAuth } from '../components/contexts/useAuth';
+import AdultContentWarning from '../components/ui/AdultContentWarning';
+import { useAdultContent } from '../hooks/useAdultContent';
 
 const ExplorePage = () => {
   const [genres, setGenres] = useState([]);
@@ -16,6 +18,7 @@ const ExplorePage = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const { canAccessAdultContent } = useAuth();
+  const { canAccess, getRestrictionMessage } = useAdultContent();
 
   useEffect(() => {
     loadGenres();
@@ -112,6 +115,19 @@ const ExplorePage = () => {
           <SearchBar placeholder="Buscar animes específicos..." />
         </div>
       </div>
+
+      {/* Aviso de Conteúdo Adulto */}
+      {!canAccess() && (
+        <div className="mb-8">
+          <AdultContentWarning
+            title="Conteúdo Adulto Filtrado"
+            message="Os animes exibidos foram filtrados para excluir conteúdo adulto. Faça login e verifique se você é maior de 18 anos para acessar todos os animes."
+            showDetails={true}
+            onAction={() => window.location.href = '/'}
+            actionText="Fazer Login"
+          />
+        </div>
+      )}
 
       {/* Gêneros */}
       <section className="mb-12">

@@ -11,6 +11,8 @@ import SharePreviewModal from '../components/features/sharing/SharePreviewModal'
 import { useLanguage } from '../components/contexts/useLanguage';
 import { useShareReviewImage } from '../hooks/useShareReviewImage';
 import { useTheme } from '../hooks/useTheme';
+import AdultContentWarning from '../components/ui/AdultContentWarning';
+import { useAdultContent } from '../hooks/useAdultContent';
 
 const AnimeDetailPage = () => {
   const { id } = useParams(); // id é string aqui
@@ -30,6 +32,7 @@ const AnimeDetailPage = () => {
   const { theme } = useTheme();
   
   const { translate } = useLanguage(); // Usar o hook de linguagem
+  const { canAccess, checkAccessWithNotification } = useAdultContent();
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -307,6 +310,27 @@ const AnimeDetailPage = () => {
 
           {/* Controles da Watchlist */}
           {id && <WatchlistControls animeId={Number(id)} />}
+
+          {/* Aviso de Conteúdo Adulto */}
+          {anime && anime.genres && anime.genres.some(genre => 
+            ['Hentai', 'Ecchi', 'Yuri', 'Yaoi', 'Harem'].some(adultGenre => 
+              genre.name && genre.name.toLowerCase().includes(adultGenre.toLowerCase())
+            )
+          ) && (
+            <div className="mt-6">
+              <AdultContentWarning
+                title="Conteúdo Adulto Detectado"
+                message="Este anime contém conteúdo que pode não ser adequado para menores de 18 anos."
+                showDetails={true}
+                onAction={() => {
+                  if (!canAccess()) {
+                    checkAccessWithNotification(anime.title);
+                  }
+                }}
+                actionText="Verificar Acesso"
+              />
+            </div>
+          )}
 
           {/* Seção de Avaliação do Usuário */}
           <div className="bg-card-light dark:bg-card-dark p-6 rounded-lg shadow-md mt-8">

@@ -4,6 +4,8 @@ import { Search, Filter, ChevronLeft, ChevronRight, Star, Eye } from 'lucide-rea
 import { searchAnimes, searchAnimesAdvanced } from '../services/jikanService';
 import AdvancedSearchForm from '../components/features/search/AdvancedSearchForm';
 import { useAuth } from '../components/contexts/useAuth';
+import AdultContentWarning from '../components/ui/AdultContentWarning';
+import { useAdultContent } from '../hooks/useAdultContent';
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -21,6 +23,7 @@ const SearchResultsPage = () => {
   const [activeFilters, setActiveFilters] = useState({});
   const navigate = useNavigate();
   const { canAccessAdultContent } = useAuth();
+  const { canAccess, getRestrictionMessage } = useAdultContent();
 
   useEffect(() => {
     if (!searchTerm.trim()) return;
@@ -141,6 +144,19 @@ const SearchResultsPage = () => {
           )}
         </div>
       </div>
+
+      {/* Aviso de Conteúdo Adulto */}
+      {!canAccess() && (
+        <div className="mb-6">
+          <AdultContentWarning
+            title="Conteúdo Adulto Filtrado"
+            message="Os resultados da busca foram filtrados para excluir conteúdo adulto. Faça login e verifique se você é maior de 18 anos para acessar todos os resultados."
+            showDetails={true}
+            onAction={() => window.location.href = '/'}
+            actionText="Fazer Login"
+          />
+        </div>
+      )}
 
       {/* Loading e erro */}
       {isLoading && (
