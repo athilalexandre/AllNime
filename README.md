@@ -1,4 +1,4 @@
-# 🎌 Anime Master - Your Ultimate Anime Companion
+# 🧩 AllNime - Your Ultimate Anime Companion
 
 [![React](https://img.shields.io/badge/React-18+-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-4.5+-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 <div align="center">
-  <img src="public/assets/anime-master-favicon.svg" alt="Anime Master Logo" width="120" height="120">
+  <img src="public/assets/anime-master-favicon.svg" alt="AllNime Logo" width="120" height="120">
   <h3>🇧🇷 Português | 🇺🇸 English</h3>
 </div>
 
@@ -16,7 +16,7 @@
 
 ### 📖 Sobre o Projeto
 
-**Anime Master** é uma aplicação web moderna e completa para gerenciar sua jornada pelos animes. Desenvolvida com React e Vite, oferece uma experiência fluida e responsiva para descobrir, avaliar e organizar seus animes favoritos.
+**AllNime** é uma aplicação web moderna e completa para gerenciar sua jornada pelos animes. Desenvolvida com React e Vite, oferece uma experiência fluida e responsiva para descobrir, avaliar e organizar seus animes favoritos.
 
 ### ✨ Funcionalidades Principais
 
@@ -81,7 +81,7 @@
 
 ```bash
 # Clone o repositório
-git clone https://github.com/athilalexandre/anime-master.git
+git clone https://github.com/athilalexandre/allnime.git
 
 # Entre no diretório
 cd anime-master
@@ -177,7 +177,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ### 📖 About the Project
 
-**Anime Master** is a modern and comprehensive web application for managing your anime journey. Built with React and Vite, it offers a smooth and responsive experience for discovering, rating, and organizing your favorite animes.
+**AllNime** is a modern and comprehensive web application for managing your anime journey. Built with React and Vite, it offers a smooth and responsive experience for discovering, rating, and organizing your favorite animes.
 
 ### ✨ Main Features
 
@@ -343,6 +343,6 @@ This project is under the MIT license. See the [LICENSE](LICENSE) file for more 
 ---
 
 <div align="center">
-  <p><strong>Made with ❤️ by the Anime Master Team</strong></p>
+  <p><strong>Made with ❤️ by the AllNime Team</strong></p>
   <p>Star ⭐ this repository if you found it helpful!</p>
 </div>
