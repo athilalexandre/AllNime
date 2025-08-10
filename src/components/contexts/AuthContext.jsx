@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged } from '../../services/auth/firebase';
-import { checkUserAge, canUserAccessAdultContent } from './authUtils';
+import { checkUserAge, canUserAccessAdultContent, getUserAge } from './authUtils';
 import { AuthContext } from './authContext';
 
 export const AuthProvider = ({ children }) => {
@@ -33,14 +33,20 @@ export const AuthProvider = ({ children }) => {
     return checkUserAge(user);
   }, [user]);
 
+  // Obtém a idade exata do usuário
+  const userAge = useMemo(() => {
+    return getUserAge(user);
+  }, [user]);
+
   const value = useMemo(() => ({ 
     user, 
     loading, 
     signInWithGoogle, 
     logout, 
     canAccessAdultContent, 
-    isUserAdult 
-  }), [user, loading, canAccessAdultContent, isUserAdult]);
+    isUserAdult,
+    userAge
+  }), [user, loading, canAccessAdultContent, isUserAdult, userAge]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

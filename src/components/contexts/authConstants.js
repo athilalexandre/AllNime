@@ -3,4 +3,5 @@ export const AUTH_INITIAL_STATE = {
   loading: true,
   canAccessAdultContent: false,
   isUserAdult: false,
+  userAge: null,
 };

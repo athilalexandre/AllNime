@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, X } from 'lucide-react';
+import { Search, Filter, X, Shield, AlertTriangle } from 'lucide-react';
 import { getAnimeGenres } from '../../../services/jikanService';
+import { useAdultContent } from '../../../hooks/useAdultContent';
 
 const AdvancedSearchForm = ({ onSearch, onClose, isOpen }) => {
+  const { canAccess, getRestrictionMessage } = useAdultContent();
+  
   const [filters, setFilters] = useState({
     query: '',
     genre: '',
@@ -11,7 +14,8 @@ const AdvancedSearchForm = ({ onSearch, onClose, isOpen }) => {
     minScore: '',
     maxScore: '',
     orderBy: 'popularity',
-    sort: 'desc'
+    sort: 'desc',
+    includeAdultContent: false
   });
   
   const [genres, setGenres] = useState([]);
@@ -36,10 +40,10 @@ const AdvancedSearchForm = ({ onSearch, onClose, isOpen }) => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFilters(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -47,9 +51,14 @@ const AdvancedSearchForm = ({ onSearch, onClose, isOpen }) => {
     e.preventDefault();
     
     // Limpar valores vazios
-const cleanFilters = Object.fromEntries(
-  Object.entries(filters).filter(([, value]) => value !== '')
-);
+    const cleanFilters = Object.fromEntries(
+      Object.entries(filters).filter(([, value]) => value !== '' && value !== false)
+    );
+    
+    // Se não pode acessar conteúdo adulto, forçar includeAdultContent como false
+    if (!canAccess()) {
+      cleanFilters.includeAdultContent = false;
+    }
     
     onSearch(cleanFilters);
   };
@@ -63,11 +72,14 @@ const cleanFilters = Object.fromEntries(
       minScore: '',
       maxScore: '',
       orderBy: 'popularity',
-      sort: 'desc'
+      sort: 'desc',
+      includeAdultContent: false
     });
   };
 
   if (!isOpen) return null;
+
+  const restrictionMessage = getRestrictionMessage();
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -236,6 +248,38 @@ const cleanFilters = Object.fromEntries(
                 <option value="asc">Crescente</option>
               </select>
             </div>
+          </div>
+
+          {/* Filtro de conteúdo adulto */}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  name="includeAdultContent"
+                  checked={filters.includeAdultContent}
+                  onChange={handleInputChange}
+                  disabled={!canAccess()}
+                  className="w-4 h-4 text-primary-light border-gray-300 rounded focus:ring-primary-light dark:focus:ring-primary-dark"
+                />
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Incluir conteúdo adulto (+18)
+                </label>
+              </div>
+              
+              {!canAccess() && (
+                <div className="flex items-center space-x-2 text-yellow-600 dark:text-yellow-400">
+                  <AlertTriangle size={16} />
+                  <span className="text-xs">{restrictionMessage}</span>
+                </div>
+              )}
+            </div>
+            
+            {canAccess() && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-6">
+                Marque esta opção para incluir animes com conteúdo adulto na busca
+              </p>
+            )}
           </div>
 
           {/* Botões */}

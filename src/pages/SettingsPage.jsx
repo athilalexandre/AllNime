@@ -11,7 +11,7 @@ const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState('general');
   const { theme, toggleTheme } = useTheme();
   const { language, setLanguage } = useLanguage();
-  const { user, canAccessAdultContent, isUserAdult } = useAuth();
+  const { user, canAccessAdultContent, isUserAdult, userAge, logout } = useAuth(); // Modified
 
   const handleExport = () => {
     const data = exportAllData();
@@ -170,25 +170,83 @@ const SettingsPage = () => {
         return (
           <div className="space-y-4">
             <div className="p-4 bg-card-light dark:bg-card-dark rounded-lg shadow space-y-3">
-              <h3 className="text-lg font-semibold text-text-main-light dark:text-text-main-dark">Privacidade e Segurança</h3>
-              <p className="text-text-muted-light dark:text-text-muted-dark">Configure suas preferências de privacidade.</p>
-              <div className="space-y-2">
+              <h3 className="text-lg font-semibold text-text-main-light dark:text-text-main-dark">Configurações de Privacidade</h3>
+              <p className="text-text-muted-light dark:text-text-muted-dark">Gerencie suas configurações de privacidade e segurança.</p>
+              
+              <div className="space-y-3">
                 <label className="flex items-center space-x-2">
                   <input type="checkbox" className="rounded" defaultChecked />
-                  <span className="text-sm">Compartilhar dados de uso</span>
+                  <span className="text-sm">Permitir rastreamento de uso para melhorias</span>
                 </label>
                 <label className="flex items-center space-x-2">
                   <input type="checkbox" className="rounded" defaultChecked />
-                  <span className="text-sm">Permitir cookies</span>
+                  <span className="text-sm">Compartilhar dados anônimos de uso</span>
                 </label>
-                <div className="pt-2">
-                  <p className="text-xs text-text-muted-light dark:text-text-muted-dark">
-                    Status de conteúdo adulto: {canAccessAdultContent ? 'Permitido' : 'Restrito'}
-                  </p>
-                  <p className="text-xs text-text-muted-light dark:text-text-muted-dark">
-                    Verificação de idade: {isUserAdult ? 'Verificado' : 'Não verificado'}
-                  </p>
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" className="rounded" defaultChecked />
+                  <span className="text-sm">Receber notificações sobre atualizações</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="p-4 bg-card-light dark:bg-card-dark rounded-lg shadow space-y-3">
+              <h3 className="text-lg font-semibold text-text-main-light dark:text-text-main-dark">Restrições de Conteúdo</h3>
+              <p className="text-text-muted-light dark:text-text-muted-dark">Configurações relacionadas ao acesso a conteúdo adulto.</p>
+              
+              <div className="space-y-4">
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                  <h5 className="font-medium text-text-main-light dark:text-text-main-dark mb-2">Status Atual</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-3 h-3 rounded-full ${isUserAdult ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                      <span className="text-sm text-text-muted-light dark:text-text-muted-dark">
+                        {isUserAdult ? 'Usuário Adulto' : 'Usuário Menor de Idade'}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-3 h-3 rounded-full ${canAccessAdultContent ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                      <span className="text-sm text-text-muted-light dark:text-text-muted-dark">
+                        {canAccessAdultContent ? 'Conteúdo +18 Permitido' : 'Conteúdo +18 Bloqueado'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {userAge && (
+                    <p className="text-xs text-text-muted-light dark:text-text-muted-dark mt-2">
+                      Idade verificada: {userAge} anos
+                    </p>
+                  )}
                 </div>
+                
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                  <h5 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Como Funciona</h5>
+                  <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                    <li>• Usuários não logados não podem acessar conteúdo adulto</li>
+                    <li>• Usuários logados precisam ser maiores de 18 anos</li>
+                    <li>• A verificação é feita através do perfil do Google</li>
+                    <li>• Conteúdo adulto inclui gêneros como Ecchi, Harem, etc.</li>
+                  </ul>
+                </div>
+                
+                {!canAccessAdultContent && (
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-800">
+                    <h5 className="font-medium text-yellow-900 dark:text-yellow-100 mb-2">Para Acessar Conteúdo Adulto</h5>
+                    <ul className="text-sm text-yellow-800 dark:text-yellow-200 space-y-1">
+                      {!user ? (
+                        <>
+                          <li>• Faça login com sua conta Google</li>
+                          <li>• Verifique se sua data de nascimento está correta no Google</li>
+                        </>
+                      ) : (
+                        <>
+                          <li>• Verifique se sua data de nascimento está correta no Google</li>
+                          <li>• Certifique-se de que você é maior de 18 anos</li>
+                          <li>• Entre em contato com o suporte se necessário</li>
+                        </>
+                      )}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -256,22 +314,87 @@ const SettingsPage = () => {
             <div className="p-4 bg-card-light dark:bg-card-dark rounded-lg shadow space-y-3">
               <h3 className="text-lg font-semibold text-text-main-light dark:text-text-main-dark">Informações da Conta</h3>
               {user ? (
-                <div className="space-y-2">
-                  <p className="text-text-muted-light dark:text-text-muted-dark">
-                    <strong>Email:</strong> {user.email}
-                  </p>
-                  <p className="text-text-muted-light dark:text-text-muted-dark">
-                    <strong>Nome:</strong> {user.displayName || 'Não informado'}
-                  </p>
-                  <p className="text-text-muted-light dark:text-text-muted-dark">
-                    <strong>ID:</strong> {user.uid}
-                  </p>
-                  <p className="text-text-muted-light dark:text-text-muted-dark">
-                    <strong>Conta criada:</strong> {user.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : 'Não disponível'}
-                  </p>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    {user.photoURL && (
+                      <img 
+                        src={user.photoURL} 
+                        alt="Profile" 
+                        className="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-600"
+                      />
+                    )}
+                    <div>
+                      <h4 className="text-lg font-medium text-text-main-light dark:text-text-main-dark">
+                        {user.displayName || 'Usuário'}
+                      </h4>
+                      <p className="text-sm text-text-muted-light dark:text-text-muted-dark">
+                        {user.email}
+                      </p>
+                      <p className="text-xs text-text-muted-light dark:text-text-muted-dark">
+                        Conta criada em: {user.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('pt-BR') : 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                      <h5 className="font-medium text-text-main-light dark:text-text-main-dark mb-2">Status de Idade</h5>
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-3 h-3 rounded-full ${isUserAdult ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                        <span className="text-sm text-text-muted-light dark:text-text-muted-dark">
+                          {isUserAdult ? 'Usuário Adulto' : 'Usuário Menor de Idade'}
+                        </span>
+                      </div>
+                      {userAge && (
+                        <p className="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">
+                          Idade: {userAge} anos
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                      <h5 className="font-medium text-text-main-light dark:text-text-main-dark mb-2">Conteúdo Adulto</h5>
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-3 h-3 rounded-full ${canAccessAdultContent ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                        <span className="text-sm text-text-muted-light dark:text-text-muted-dark">
+                          {canAccessAdultContent ? 'Permitido' : 'Bloqueado'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">
+                        {canAccessAdultContent 
+                          ? 'Você pode acessar conteúdo +18' 
+                          : 'Conteúdo +18 não disponível'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button
+                      onClick={logout}
+                      className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      <span>Sair da Conta</span>
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <p className="text-text-muted-light dark:text-text-muted-dark">Nenhum usuário logado</p>
+                <div className="text-center py-8">
+                  <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h4 className="text-lg font-medium text-text-main-light dark:text-text-main-dark mb-2">
+                    Não autenticado
+                  </h4>
+                  <p className="text-text-muted-light dark:text-text-muted-dark mb-4">
+                    Faça login para acessar todas as funcionalidades
+                  </p>
+                  <button
+                    onClick={() => window.location.href = '/'}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                  >
+                    Ir para Login
+                  </button>
+                </div>
               )}
             </div>
           </div>

@@ -85,6 +85,34 @@ class NotificationService {
     return notification;
   }
 
+  // Adiciona notificação específica para conteúdo adulto bloqueado
+  addAdultContentBlockedNotification(animeTitle = 'anime') {
+    return this.addNotification(
+      'adultContentBlocked',
+      'Conteúdo Adulto Bloqueado',
+      `Você não pode acessar "${animeTitle}" devido às restrições de idade. Faça login e verifique se você é maior de 18 anos.`,
+      { 
+        type: 'adultContentBlocked',
+        requiresLogin: true,
+        requiresAgeVerification: true
+      }
+    );
+  }
+
+  // Adiciona notificação para usuário não autenticado tentando acessar conteúdo adulto
+  addLoginRequiredNotification(animeTitle = 'anime') {
+    return this.addNotification(
+      'loginRequired',
+      'Login Necessário',
+      `Para acessar "${animeTitle}" e outros conteúdos adultos, você precisa fazer login com uma conta Google.`,
+      { 
+        type: 'loginRequired',
+        requiresLogin: true,
+        actionUrl: '/'
+      }
+    );
+  }
+
   // Marca notificação como lida
   markAsRead(notificationId) {
     const notification = this.notifications.find(n => n.id === notificationId);
