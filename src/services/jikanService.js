@@ -2,11 +2,19 @@ import axios from 'axios';
 
 const API_BASE_URL = 'https://api.jikan.moe/v4';
 
+// Configuração do axios com timeout e retry
+const axiosInstance = axios.create({
+  timeout: 15000, // 15 segundos de timeout
+  headers: {
+    'User-Agent': 'AnimeMaster/1.0'
+  }
+});
+
 export const searchAnimes = async (query) => {
   if (!query) return Promise.resolve({ data: [] }); // Retorna vazio se não houver query
 
   try {
-    const response = await axios.get(`${API_BASE_URL}/anime`, {
+    const response = await axiosInstance.get(`${API_BASE_URL}/anime`, {
       params: {
         q: query,
         sfw: true, // Conteúdo seguro
@@ -27,26 +35,53 @@ export const searchAnimes = async (query) => {
     return { ...response.data, data: filtered };
   } catch (error) {
     console.error('Erro ao buscar dados da Jikan API:', error.response?.data || error.message);
-    throw error; // Re-lançar o erro para ser tratado no componente
+    // Retornar array vazio em caso de erro para não quebrar a UI
+    return { data: [], pagination: { has_next_page: false } };
   }
 };
 
 export const getAnimeDetailsById = async (id) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/anime/${id}/full`);
+    // Primeira tentativa: endpoint /full
+    const response = await axiosInstance.get(`${API_BASE_URL}/anime/${id}/full`);
     return response.data;
   } catch (error) {
-    if (error?.response?.status === 404) {
+    console.warn(`Endpoint /full falhou para anime ${id}, tentando endpoint básico...`);
+    
+    try {
+      // Segunda tentativa: endpoint básico
+      const fallback = await axiosInstance.get(`${API_BASE_URL}/anime/${id}`);
+      return fallback.data;
+    } catch (fallbackError) {
+      console.error(`Fallback falhou ao buscar anime ${id}:`, fallbackError.response?.data || fallbackError.message);
+      
+      // Terceira tentativa: endpoint /characters para verificar se o anime existe
       try {
-        const fallback = await axios.get(`${API_BASE_URL}/anime/${id}`);
-        return fallback.data;
-      } catch (fallbackError) {
-        console.error(`Fallback falhou ao buscar anime ${id}:`, fallbackError.response?.data || fallbackError.message);
-        throw fallbackError;
+        const characterCheck = await axiosInstance.get(`${API_BASE_URL}/anime/${id}/characters`);
+        if (characterCheck.data) {
+          // Se conseguimos buscar personagens, o anime existe mas os detalhes falharam
+          // Retornar dados mínimos para não quebrar a UI
+          return {
+            data: {
+              mal_id: id,
+              title: `Anime ID: ${id}`,
+              title_japanese: 'N/A',
+              synopsis: 'Informações temporariamente indisponíveis.',
+              images: { jpg: { image_url: 'https://placehold.co/250x350/F0F0F0/333333?text=Loading...' } },
+              rating: 'N/A',
+              popularity: null,
+              trailer: null,
+              external: []
+            }
+          };
+        }
+      } catch (charError) {
+        console.error(`Verificação de personagens falhou para anime ${id}:`, charError.message);
       }
+      
+      // Se tudo falhou, lançar erro
+      throw new Error(`Não foi possível carregar os detalhes do anime ${id}. Tente novamente mais tarde.`);
     }
-    console.error(`Erro ao buscar detalhes do anime ${id} da Jikan API:`, error.response?.data || error.message);
-    throw error;
   }
 };
 

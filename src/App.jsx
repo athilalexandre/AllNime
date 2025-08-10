@@ -11,6 +11,7 @@ import DroppedPage from './pages/DroppedPage';
 import ExplorePage from './pages/ExplorePage';
 import SettingsPage from './pages/SettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
+import TestComponent from './components/TestComponent';
 import './index.css';
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
             <Route path="/dropped" element={<DroppedPage />} />
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/test" element={<TestComponent />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>

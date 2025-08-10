@@ -4,10 +4,13 @@ import { useParams, Link } from 'react-router-dom';
 // Mantém Jikan por ora, já que anilistService não existe no projeto base
 import { getAnimeDetailsById } from '../services/jikanService';
 import { getAnimeWatchInfo } from '../services/consumetService';
-import { Star } from 'lucide-react'; // Ícone de estrela
+import { Star, Share2 } from 'lucide-react'; // Ícone de estrela e compartilhamento
 import WatchlistControls from '../components/features/anime-detail/WatchlistControls'; // Adicionar import
 import ShareControls from '../components/features/sharing/ShareControls';
+import SharePreviewModal from '../components/features/sharing/SharePreviewModal';
 import { useLanguage } from '../components/contexts/LanguageContext.jsx';
+import { useShareReviewImage } from '../hooks/useShareReviewImage';
+import { useTheme } from '../hooks/useTheme';
 
 const AnimeDetailPage = () => {
   const { id } = useParams(); // id é string aqui
@@ -18,50 +21,74 @@ const AnimeDetailPage = () => {
   const [userRating, setUserRating] = useState(0);
   const [userOpinion, setUserOpinion] = useState('');
   const [saveStatus, setSaveStatus] = useState({ message: '', type: '' }); // type: 'success' ou 'error'
-  // Recursos de geração de imagem/tema removidos nesta versão simplificada
-
+  const [showShareModal, setShowShareModal] = useState(false); // Estado para controlar o modal de compartilhamento
+  
+  // Hook para geração de imagem
+  const { generatedImage, isGenerating, error: imageError, generateImage, resetImageState } = useShareReviewImage();
+  
+  // Hook para tema
+  const { theme } = useTheme();
+  
   const { translate } = useLanguage(); // Usar o hook de linguagem
 
   useEffect(() => {
     const fetchDetails = async () => {
+      console.log('🔍 Iniciando busca de detalhes para anime ID:', id);
       setIsLoading(true);
       setError(null);
+      
       try {
+        console.log('📡 Chamando Jikan API para ID:', id);
         const detailsResponse = await getAnimeDetailsById(id);
-        setAnime(detailsResponse.data);
+        console.log('✅ Resposta da Jikan API:', detailsResponse);
+        
+        if (detailsResponse?.data) {
+          setAnime(detailsResponse.data);
+          console.log('🎯 Anime definido no estado:', detailsResponse.data.title);
 
-        // Buscar informações de streaming com base no título
-        if (detailsResponse?.data?.title) {
-          try {
-            const watchInfoResponse = await getAnimeWatchInfo(detailsResponse.data.title);
-            if (watchInfoResponse?.results?.[0]?.episodes) {
-              setStreamingEpisodes(watchInfoResponse.results[0].episodes.slice(0, 5));
+          // Buscar informações de streaming com base no título
+          if (detailsResponse.data.title) {
+            try {
+              console.log('🌊 Buscando informações de streaming para:', detailsResponse.data.title);
+              const watchInfoResponse = await getAnimeWatchInfo(detailsResponse.data.title);
+              console.log('✅ Resposta da Consumet API:', watchInfoResponse);
+              
+              if (watchInfoResponse?.results?.[0]?.episodes) {
+                setStreamingEpisodes(watchInfoResponse.results[0].episodes.slice(0, 5));
+                console.log('📺 Episódios de streaming definidos:', watchInfoResponse.results[0].episodes.length);
+              }
+            } catch (consumetError) {
+              console.warn("⚠️ Não foi possível obter links de streaming da Consumet:", consumetError);
             }
-          } catch (consumetError) {
-            console.warn("Não foi possível obter links de streaming da Consumet:", consumetError);
           }
-        }
 
-        // Carregar avaliação do localStorage
-        // No ambiente de servidor/ferramenta, localStorage não está disponível.
-        // Envolver em try-catch ou verificar 'typeof window'.
-        if (typeof window !== 'undefined' && window.localStorage) {
+          // Carregar avaliação do localStorage
+          if (typeof window !== 'undefined' && window.localStorage) {
             const savedRating = localStorage.getItem(`animeRating_${id}`);
             if (savedRating) {
               const parsedRating = JSON.parse(savedRating);
               setUserRating(parsedRating.rating || 0);
               setUserOpinion(parsedRating.opinion || '');
+              console.log('⭐ Avaliação carregada do localStorage:', parsedRating);
             }
+          }
+        } else {
+          console.error('❌ Resposta da API não contém dados válidos:', detailsResponse);
+          setError('Resposta da API inválida');
         }
 
       } catch (err) {
-        console.error("Erro ao buscar detalhes do anime:", err);
+        console.error("❌ Erro ao buscar detalhes do anime:", err);
         setError(translate('Não foi possível carregar os detalhes do anime.'));
       } finally {
         setIsLoading(false);
+        console.log('🏁 Busca de detalhes concluída');
       }
     };
-    fetchDetails();
+    
+    if (id) {
+      fetchDetails();
+    }
   }, [id, translate]); // Adicionar translate às dependências
 
   const handleSaveRating = () => {
@@ -117,16 +144,60 @@ const AnimeDetailPage = () => {
 
   if (error) {
     return (
-      <div className="container mx-auto p-4 pt-20 text-center text-red-500 dark:text-red-400">
-        {error}
+      <div className="container mx-auto p-4 pt-20 text-center">
+        <div className="max-w-md mx-auto">
+          <div className="text-6xl mb-4">😔</div>
+          <h1 className="text-2xl font-bold text-text-light dark:text-text-dark mb-4">
+            {translate('Anime não encontrado')}
+          </h1>
+          <p className="text-text-muted-light dark:text-text-muted-dark mb-6">
+            {translate('O anime que você está procurando não foi encontrado na base de dados.')}
+          </p>
+          <div className="space-y-3">
+            <Link 
+              to="/" 
+              className="block w-full bg-primary-light dark:bg-primary-dark text-white font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition-opacity"
+            >
+              {translate('Voltar para a busca')}
+            </Link>
+            <Link 
+              to="/explore" 
+              className="block w-full bg-accent-light dark:bg-accent-dark text-white font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition-opacity"
+            >
+              {translate('Explorar outros animes')}
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!anime) {
     return (
-      <div className="container mx-auto p-4 pt-20 text-center text-text-muted-light dark:text-text-muted-dark">
-        {translate('Anime não encontrado.')}
+      <div className="container mx-auto p-4 pt-20 text-center">
+        <div className="max-w-md mx-auto">
+          <div className="text-6xl mb-4">🤔</div>
+          <h1 className="text-2xl font-bold text-text-light dark:text-text-dark mb-4">
+            {translate('Anime não disponível')}
+          </h1>
+          <p className="text-text-muted-light dark:text-text-muted-dark mb-6">
+            {translate('Não foi possível carregar as informações deste anime.')}
+          </p>
+          <div className="space-y-3">
+            <Link 
+              to="/" 
+              className="block w-full bg-primary-light dark:bg-primary-dark text-white font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition-opacity"
+            >
+              {translate('Voltar para a busca')}
+            </Link>
+            <Link 
+              to="/explore" 
+              className="block w-full bg-accent-light dark:bg-accent-dark text-white font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition-opacity"
+            >
+              {translate('Explorar outros animes')}
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -332,7 +403,10 @@ const AnimeDetailPage = () => {
                 Compartilhar Avaliação
               </h3>
               <button
-                onClick={handleOpenShareModal}
+                onClick={() => {
+                  setShowShareModal(true);
+                  resetImageState(); // Limpar imagem/erros ao abrir
+                }}
                 disabled={isGenerating}
                 className="w-full flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-150 disabled:opacity-50"
               >
