@@ -8,7 +8,7 @@ import { Star, Share2 } from 'lucide-react'; // Ícone de estrela e compartilham
 import WatchlistControls from '../components/features/anime-detail/WatchlistControls'; // Adicionar import
 import ShareControls from '../components/features/sharing/ShareControls';
 import SharePreviewModal from '../components/features/sharing/SharePreviewModal';
-import { useLanguage } from '../components/contexts/useLanguage';
+import { useLanguage } from '../components/contexts/LanguageContext';
 import { useShareReviewImage } from '../hooks/useShareReviewImage';
 import { useTheme } from '../hooks/useTheme';
 import AdultContentWarning from '../components/ui/AdultContentWarning';

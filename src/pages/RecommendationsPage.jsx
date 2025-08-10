@@ -3,11 +3,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, Star, RefreshCw, Play, Clock, Heart } from 'lucide-react';
 import { recommendationService } from '../services/recommendationService.js';
-import { useLanguage } from '../components/contexts/useLanguage';
+import { useLanguage } from '../components/contexts/LanguageContext';
 import SkeletonCard from '../components/common/SkeletonCard';
 import AdultContentWarning from '../components/ui/AdultContentWarning';
 import { useAdultContent } from '../hooks/useAdultContent';
-import { useAuth } from '../components/contexts/useAuth';
+import { useAuth } from '../components/contexts/AuthContext';
 
 const RecommendationsPage = () => {
   const { translate } = useLanguage();

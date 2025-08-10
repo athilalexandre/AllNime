@@ -14,7 +14,7 @@ import {
   Lightbulb
 } from 'lucide-react';
 import { analyticsService } from '../services/analyticsService.js';
-import { useLanguage } from '../components/contexts/useLanguage';
+import { useLanguage } from '../components/contexts/LanguageContext';
 
 const StatsPage = () => {
   const { translate } = useLanguage();

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X, TrendingUp, Clock, Star } from 'lucide-react';
 import { searchAnimes } from '../../../services/jikanService';
-import { useAuth } from '../../contexts/useAuth';
+import { useAuth } from '../../contexts/AuthContext';
 
 const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "" }) => {
   const [searchTerm, setSearchTerm] = useState('');

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Shield, AlertTriangle, Lock, UserCheck } from 'lucide-react';
-import { useAuth } from '../contexts/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 
 const AdultContentWarning = ({ 
   title = "Conteúdo Adulto", 

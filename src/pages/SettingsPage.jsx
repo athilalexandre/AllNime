@@ -2,8 +2,8 @@ import React, { useRef, useState } from 'react';
 import { Download, Upload, Settings as SettingsIcon, Bell, Globe, Palette, Shield, User, Database, RefreshCw } from 'lucide-react';
 import { exportAllData, importAllData } from '../services/backupService';
 import { useTheme } from '../hooks/useTheme';
-import { useLanguage } from '../components/contexts/useLanguage';
-import { useAuth } from '../components/contexts/useAuth';
+import { useLanguage } from '../components/contexts/LanguageContext';
+import { useAuth } from '../components/contexts/AuthContext';
 
 const SettingsPage = () => {
   const fileInputRef = useRef(null);

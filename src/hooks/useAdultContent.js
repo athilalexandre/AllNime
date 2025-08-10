@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useAuth } from '../components/contexts/useAuth';
+import { useAuth } from '../components/contexts/AuthContext';
 import { notificationService } from '../services/notificationService';
 
 export const useAdultContent = () => {

@@ -8,7 +8,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/autoplay';
 import { getTopRatedAnimes } from '../../../services/jikanService';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/useAuth';
+import { useAuth } from '../../contexts/AuthContext';
 
 const TopRatedAnimeBlock = () => {
   const [animes, setAnimes] = useState([]);

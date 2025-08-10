@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Star, TrendingUp, Sparkles, Eye } from 'lucide-react';
 import { getAnimeGenres, getAnimes, getTopRatedAnimes } from '../services/jikanService';
 import SearchBar from '../components/features/search/SearchBar';
-import { useAuth } from '../components/contexts/useAuth';
+import { useAuth } from '../components/contexts/AuthContext';
 import AdultContentWarning from '../components/ui/AdultContentWarning';
 import { useAdultContent } from '../hooks/useAdultContent';
 

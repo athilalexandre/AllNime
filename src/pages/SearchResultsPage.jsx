@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Search, Filter, ChevronLeft, ChevronRight, Star, Eye } from 'lucide-react';
 import { searchAnimes, searchAnimesAdvanced } from '../services/jikanService';
 import AdvancedSearchForm from '../components/features/search/AdvancedSearchForm';
-import { useAuth } from '../components/contexts/useAuth';
+import { useAuth } from '../components/contexts/AuthContext';
 import AdultContentWarning from '../components/ui/AdultContentWarning';
 import { useAdultContent } from '../hooks/useAdultContent';
 
