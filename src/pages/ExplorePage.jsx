@@ -1,11 +1,11 @@
 // src/pages/ExplorePage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { searchAnimes } from '../services/jikanService';
+import { getAnimes, searchAnimes } from '../services/jikanService';
 import SkeletonCard from '../components/common/SkeletonCard';
 import { Filter, ChevronLeft, ChevronRight, SearchX } from 'lucide-react';
 
-const ITEMS_PER_PAGE = 18; // Jikan V4 suporta até 25, mas 18 é bom para grid 6x3
+const ITEMS_PER_PAGE = 25; // Jikan V4 suporta até 25
 
 const ExplorePage = () => {
   const [animes, setAnimes] = useState([]);
@@ -34,16 +34,27 @@ const ExplorePage = () => {
     if (typeof window !== 'undefined') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    
     try {
-      const response = await searchAnimes(debouncedSearchQuery);
-      // Ajusta paginação simples com base no resultado retornado
+      let response;
+      
+      if (debouncedSearchQuery.trim()) {
+        // Se há termo de busca, usar searchAnimes
+        response = await searchAnimes(debouncedSearchQuery);
+        // Para busca, não há paginação real, então simulamos
+        setPaginationData({
+          current_page: 1,
+          has_next_page: false,
+          items: { total: (response.data || []).length },
+          last_visible_page: 1,
+        });
+      } else {
+        // Se não há busca, usar getAnimes para explorar
+        response = await getAnimes(currentPage, ITEMS_PER_PAGE);
+        setPaginationData(response.pagination);
+      }
+      
       setAnimes(response.data || []);
-      setPaginationData({
-        current_page: 1,
-        has_next_page: false,
-        items: { total: (response.data || []).length },
-        last_visible_page: 1,
-      });
     } catch (err) {
       console.error("Erro ao buscar animes para explorar:", err);
       setError("Não foi possível carregar os animes. Tente novamente mais tarde.");
@@ -64,7 +75,7 @@ const ExplorePage = () => {
   };
 
   const handleNextPage = () => {
-    if (paginationData?.hasNextPage) {
+    if (paginationData?.has_next_page) {
       setCurrentPage(prev => prev + 1);
     }
   };
@@ -92,12 +103,11 @@ const ExplorePage = () => {
           placeholder="Buscar animes..."
           value={searchQuery}
           onChange={handleSearchChange}
-          className="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-card-light dark:bg-card-dark text-text-main-light dark:text-text-main-dark focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark outline-none w-full sm:w-auto text-black" // Adicionado text-black
+          className="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-card-light dark:bg-card-dark text-text-main-light dark:text-text-main-dark focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark outline-none w-full sm:w-auto text-black"
         />
       </div>
 
       {error && <p className="text-center text-red-500 dark:text-red-400 p-4 col-span-full">{error}</p>}
-      {/* Adicionado col-span-full aqui também para o caso de erro */}
 
       {isLoading && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
@@ -118,11 +128,11 @@ const ExplorePage = () => {
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
             {animes.map(anime => (
-              <Link to={`/anime/${anime.id}`} key={anime.id} className="block group">
+              <Link to={`/anime/${anime.mal_id}`} key={anime.mal_id} className="block group">
                 <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg overflow-hidden transform transition-all duration-300 ease-in-out group-hover:scale-105 group-hover:shadow-xl">
                   <img
-                    src={anime.coverImage?.large || anime.coverImage?.medium}
-                    alt={anime.title?.romaji || anime.title?.english || 'N/A'}
+                    src={anime.images?.jpg?.image_url || anime.images?.webp?.image_url || 'https://placehold.co/250x350/F0F0F0/333333?text=No+Image'}
+                    alt={anime.title || 'N/A'}
                     className="w-full h-64 sm:h-72 object-cover"
                     onError={(e) => {
                       e.target.onerror = null; // Evita loop de erro
@@ -130,8 +140,8 @@ const ExplorePage = () => {
                     }}
                   />
                   <div className="p-3 sm:p-4">
-                    <h3 className="text-sm sm:text-md font-semibold text-text-main-light dark:text-text-main-dark truncate group-hover:text-primary-light dark:group-hover:text-primary-dark" title={anime.title?.romaji || anime.title?.english || 'N/A'}>
-                      {anime.title?.romaji || anime.title?.english || 'N/A'}
+                    <h3 className="text-sm sm:text-md font-semibold text-text-main-light dark:text-text-main-dark truncate group-hover:text-primary-light dark:group-hover:text-primary-dark" title={anime.title || 'N/A'}>
+                      {anime.title || 'N/A'}
                     </h3>
                   </div>
                 </div>
@@ -139,8 +149,8 @@ const ExplorePage = () => {
             ))}
           </div>
 
-          {/* Paginação */}
-          {paginationData && totalItems > ITEMS_PER_PAGE && (
+          {/* Paginação - só mostrar se não for uma busca */}
+          {!debouncedSearchQuery.trim() && paginationData && totalItems > ITEMS_PER_PAGE && (
             <div className="flex justify-center items-center space-x-2 sm:space-x-4 mt-8 pt-4 border-t border-gray-300 dark:border-gray-700">
               <button
                 onClick={handlePrevPage}
@@ -154,7 +164,7 @@ const ExplorePage = () => {
               </span>
               <button
                 onClick={handleNextPage}
-                 disabled={!paginationData?.has_next_page || isLoading}
+                disabled={!paginationData?.has_next_page || isLoading}
                 className="px-3 py-2 sm:px-4 bg-primary-light hover:bg-opacity-80 dark:bg-primary-dark dark:hover:bg-opacity-80 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center text-sm sm:text-base"
               >
                 Próxima <ChevronRight size={20} className="ml-1" />

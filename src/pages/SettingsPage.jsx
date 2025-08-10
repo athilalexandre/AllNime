@@ -38,7 +38,7 @@ const SettingsPage = () => {
       } else {
         setImportMessage(`Falha na importação: ${result.error || 'Erro desconhecido'}`);
       }
-    } catch (e) {
+    } catch {
       setImportMessage('Arquivo inválido. Certifique-se de selecionar um backup JSON exportado pelo app.');
     } finally {
       event.target.value = '';

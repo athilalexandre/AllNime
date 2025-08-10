@@ -78,7 +78,7 @@ class RecommendationService {
   }
 
   // Busca animes similares baseado nas preferências
-  async findSimilarAnimes(genrePreferences, limit) {
+  async findSimilarAnimes(genrePreferences) {
     const recommendations = [];
     const seenIds = new Set();
     
@@ -89,10 +89,10 @@ class RecommendationService {
     for (const preference of genrePreferences) {
       try {
         // Busca animes por gênero (simulado - em produção seria uma API call)
-        const genreAnimes = await this.searchAnimesByGenre(preference.genre, 20);
+        const genreAnimes = await this.searchAnimesByGenre();
         
         for (const anime of genreAnimes) {
-          if (recommendations.length >= limit) break;
+          if (recommendations.length >= 10) break;
           if (!seenIds.has(anime.mal_id)) {
             recommendations.push({
               ...anime,
@@ -109,41 +109,42 @@ class RecommendationService {
 
     return recommendations
       .sort((a, b) => b.matchScore - a.matchScore)
-      .slice(0, limit);
+      .slice(0, 10);
   }
 
   // Busca animes por gênero (simulado - em produção seria uma API call real)
-  async searchAnimesByGenre(genre, limit = 20) {
+  async searchAnimesByGenre() {
     // Por enquanto, retorna uma lista simulada
     // Em produção, isso seria uma chamada para a API Jikan
+    // TODO: Implementar chamada real para a API
     return [];
   }
 
   // Recomendações populares para usuários sem histórico
-  async getPopularRecommendations(limit = 10) {
+  async getPopularRecommendations() {
     try {
       // Em produção, isso seria uma chamada para a API Jikan
       // Por enquanto, retorna uma lista simulada
-      return [];
+      // TODO: Implementar chamada real para a API
     } catch (error) {
       console.error('Erro ao buscar recomendações populares:', error);
-      return [];
     }
+    return [];
   }
 
   // Recomendações baseadas em um anime específico
-  async getSimilarAnimes(animeId, limit = 6) {
+  async getSimilarAnimes(animeId) {
     try {
       const anime = await getAnimeDetailsById(animeId);
       if (!anime) return [];
 
       // Em produção, isso seria uma busca por animes similares na API
       // Por enquanto, retorna uma lista simulada baseada no gênero
-      return [];
+      // TODO: Implementar busca real por animes similares
     } catch (error) {
       console.error('Erro ao buscar animes similares:', error);
-      return [];
     }
+    return [];
   }
 
   // Atualiza cache de animes

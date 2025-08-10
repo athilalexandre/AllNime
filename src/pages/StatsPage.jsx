@@ -269,7 +269,7 @@ const StatsPage = () => {
                   {translate('Avaliações Recentes')}
                 </h3>
                 <div className="space-y-2">
-                  {stats.rating.recentRatings.slice(0, 5).map((rating, index) => (
+                  {stats.rating.recentRatings.slice(0, 5).map((rating) => (
                     <div key={rating.id} className="flex items-center justify-between">
                       <span className="text-sm text-text-main-light dark:text-text-main-dark truncate">
                         {rating.anime.title}
@@ -404,7 +404,7 @@ const StatsPage = () => {
             
             {stats.genre.length > 0 ? (
               <div className="space-y-4">
-                {stats.genre.slice(0, 10).map((genre, index) => (
+                {stats.genre.slice(0, 10).map((genre) => (
                   <div key={genre.genre} className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-lg font-semibold text-text-light dark:text-text-dark">

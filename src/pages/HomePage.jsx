@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search as SearchIcon } from 'lucide-react';
 import { getManualAnimes, addManualAnime } from '../services/watchlistStorageService';
-import { v4 as uuidv4 } from 'uuid';
+// uuid import removed - not used
 
 import SeasonalAnimeBlock from '../components/features/home/SeasonalAnimeBlock';
 import TopRatedAnimeBlock from '../components/features/home/TopRatedAnimeBlock';

@@ -6,45 +6,8 @@ import { Navigation, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/autoplay';
-import { GraphQLClient, gql } from 'graphql-request';
+import { getCurrentSeasonAnimes } from '../../../services/jikanService';
 import { Link } from 'react-router-dom';
-
-const endpoint = 'https://graphql.anilist.co';
-const client = new GraphQLClient(endpoint);
-
-async function getAniListSeasonAnimes() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-  let season = 'WINTER';
-  if (month >= 4 && month <= 6) season = 'SPRING';
-  else if (month >= 7 && month <= 9) season = 'SUMMER';
-  else if (month >= 10 && month <= 12) season = 'FALL';
-
-  const SEASON_QUERY = gql`
-    query ($season: MediaSeason, $year: Int) {
-      Page(perPage: 10) {
-        media(season: $season, seasonYear: $year, type: ANIME, sort: POPULARITY_DESC) {
-          id
-          title {
-            romaji
-            native
-          }
-          coverImage {
-            large
-          }
-          averageScore
-          episodes
-          format
-          status
-        }
-      }
-    }
-  `;
-  const variables = { season, year };
-  const data = await client.request(SEASON_QUERY, variables);
-  return data.Page.media;
-}
 
 const SeasonalAnimeBlock = () => {
   const [animes, setAnimes] = useState([]);
@@ -56,9 +19,10 @@ const SeasonalAnimeBlock = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const seasonAnimes = await getAniListSeasonAnimes();
-        setAnimes(seasonAnimes);
+        const seasonAnimes = await getCurrentSeasonAnimes(1, 10);
+        setAnimes(seasonAnimes.data || []);
       } catch (err) {
+        console.error('Erro ao buscar animes da temporada:', err);
         setError('Não foi possível carregar os animes da temporada.');
         setAnimes([]);
       } finally {
@@ -102,26 +66,26 @@ const SeasonalAnimeBlock = () => {
       className="!pb-8"
     >
       {animes.map(anime => (
-        <SwiperSlide key={anime.id} className="overflow-hidden rounded-lg">
-          <Link to={`/anime/${anime.id}`} className="block group focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark h-full">
+        <SwiperSlide key={anime.mal_id} className="overflow-hidden rounded-lg">
+          <Link to={`/anime/${anime.mal_id}`} className="block group focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark h-full">
             <div className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg group-hover:scale-105 transition-transform duration-300 ease-in-out h-full flex flex-col">
               <img
-                src={anime.coverImage?.large}
-                alt={anime.title.romaji}
+                src={anime.images?.jpg?.image_url || anime.images?.webp?.image_url || 'https://placehold.co/250x350?text=No+Image'}
+                alt={anime.title || 'N/A'}
                 className="w-full h-64 object-cover"
                 loading="lazy"
                 onError={(e) => {
                   e.target.onerror = null; // Evita loop de erro
-                  e.target.src = 'https://via.placeholder.com/250x350?text=No+Image'; // Imagem de placeholder
+                  e.target.src = 'https://placehold.co/250x350?text=No+Image'; // Imagem de placeholder
                 }}
               />
               <div className="p-2 flex-grow flex flex-col justify-between">
-                <h3 className="text-xs font-semibold truncate" title={anime.title.romaji}>{anime.title.romaji}</h3>
-                {anime.averageScore && (
+                <h3 className="text-xs font-semibold truncate" title={anime.title || 'N/A'}>{anime.title || 'N/A'}</h3>
+                {anime.score && (
                   <div className="flex items-center mt-1">
                     <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 mr-1" />
                     <span className="text-xs text-text-muted-light dark:text-text-muted-dark font-semibold">
-                      {(anime.averageScore/20).toFixed(1)}/5
+                      {anime.score.toFixed(1)}/10
                     </span>
                   </div>
                 )}

@@ -1,24 +1,24 @@
 // src/pages/RecommendationsPage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Sparkles, 
-  Star, 
-  Clock, 
-  TrendingUp, 
-  RefreshCw,
-  Heart,
-  Eye,
-  Play
-} from 'lucide-react';
+import { Eye, Star, RefreshCw } from 'lucide-react';
 import { recommendationService } from '../services/recommendationService.js';
 import { useLanguage } from '../components/contexts/LanguageContext.jsx';
+import SkeletonCard from '../components/common/SkeletonCard';
 
 const RecommendationsPage = () => {
   const { translate } = useLanguage();
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('personal');
+  const [isLoadingTrending, setIsLoadingTrending] = useState(true); // Added state for trending loading
+  const [trendingAnimes, setTrendingAnimes] = useState([]); // Added state for trending animes
+  const [trendingError, setTrendingError] = useState(null); // Added state for trending error
+  const [isLoadingDiscovery, setIsLoadingDiscovery] = useState(true); // Added state for discovery loading
+  const [discoveryAnimes, setDiscoveryAnimes] = useState([]); // Added state for discovery animes
+  const [discoveryError, setDiscoveryError] = useState(null); // Added state for discovery error
+  const [selectedGenre, setSelectedGenre] = useState(null); // Added state for selected genre
+  const [popularGenres, setPopularGenres] = useState([]); // Added state for popular genres
 
   useEffect(() => {
     loadRecommendations();
@@ -36,18 +36,67 @@ const RecommendationsPage = () => {
     }
   };
 
-  const getRecommendationIcon = (type) => {
-    switch (type) {
-      case 'genre':
-        return <TrendingUp className="text-blue-500" size={16} />;
-      case 'rating':
-        return <Star className="text-yellow-500" size={16} />;
-      case 'popular':
-        return <TrendingUp className="text-green-500" size={16} />;
-      default:
-        return <Sparkles className="text-purple-500" size={16} />;
+  const fetchTrendingAnimes = async () => {
+    setIsLoadingTrending(true);
+    setTrendingError(null);
+    try {
+      const response = await fetch('https://api.jikan.moe/v4/top/anime');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setTrendingAnimes(data.data);
+    } catch (error) {
+      setTrendingError(`Erro ao carregar animes em alta: ${error.message}`);
+      console.error('Erro ao carregar animes em alta:', error);
+    } finally {
+      setIsLoadingTrending(false);
     }
   };
+
+  const fetchDiscoveryAnimes = useCallback(async () => {
+    setIsLoadingDiscovery(true);
+    setDiscoveryError(null);
+    try {
+      const response = await fetch(`https://api.jikan.moe/v4/anime?genres=${selectedGenre}&order_by=popularity&sort=desc`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setDiscoveryAnimes(data.data);
+    } catch (error) {
+      setDiscoveryError(`Erro ao carregar animes por gênero: ${error.message}`);
+      console.error('Erro ao carregar animes por gênero:', error);
+    } finally {
+      setIsLoadingDiscovery(false);
+    }
+  }, [selectedGenre]);
+
+  const fetchPopularGenres = async () => {
+    try {
+      const response = await fetch('https://api.jikan.moe/v4/genres/anime/popular');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setPopularGenres(data.data);
+    } catch (error) {
+      console.error('Erro ao carregar gêneros populares:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTrendingAnimes();
+    fetchPopularGenres();
+  }, []);
+
+  useEffect(() => {
+    if (selectedGenre) {
+      fetchDiscoveryAnimes();
+    }
+  }, [selectedGenre, fetchDiscoveryAnimes]);
+
+  // Removed unused function
 
   const getRecommendationColor = (type) => {
     switch (type) {
@@ -62,6 +111,10 @@ const RecommendationsPage = () => {
     }
   };
 
+  const handleGenreClick = (genreId) => {
+    setSelectedGenre(genreId);
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto p-4 pt-20 text-center">
@@ -74,9 +127,9 @@ const RecommendationsPage = () => {
   }
 
   const tabs = [
-    { id: 'personal', label: translate('Personalizadas'), icon: Heart },
-    { id: 'trending', label: translate('Em Alta'), icon: TrendingUp },
-    { id: 'discovery', label: translate('Descobertas'), icon: Sparkles }
+    { id: 'personal', label: translate('Personalizadas'), icon: Star },
+    { id: 'trending', label: translate('Em Alta'), icon: Star },
+    { id: 'discovery', label: translate('Descobertas'), icon: Star }
   ];
 
   return (
@@ -254,15 +307,81 @@ const RecommendationsPage = () => {
               {translate('Animes em Alta')}
             </h2>
             
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">🔥</div>
-              <h3 className="text-xl font-semibold text-text-light dark:text-text-dark mb-2">
-                {translate('Em desenvolvimento')}
-              </h3>
-              <p className="text-text-muted-light dark:text-text-muted-dark">
-                {translate('Esta funcionalidade será implementada em breve!')}
-              </p>
-            </div>
+            {isLoadingTrending ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
+              </div>
+            ) : trendingError ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">😔</div>
+                <h3 className="text-xl font-semibold text-text-light dark:text-text-dark mb-2">
+                  {translate('Erro ao carregar')}
+                </h3>
+                <p className="text-text-muted-light dark:text-text-muted-dark mb-6">
+                  {trendingError}
+                </p>
+                <button
+                  onClick={fetchTrendingAnimes}
+                  className="inline-flex items-center gap-2 bg-primary-light dark:bg-primary-dark text-white px-6 py-3 rounded-lg hover:opacity-90 transition-opacity"
+                >
+                  <RefreshCw size={18} />
+                  {translate('Tentar Novamente')}
+                </button>
+              </div>
+            ) : trendingAnimes.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {trendingAnimes.map((anime) => (
+                  <div
+                    key={anime.mal_id}
+                    className="bg-card-light dark:bg-card-dark rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                  >
+                    <Link to={`/anime/${anime.mal_id}`}>
+                      <div className="relative">
+                        <img
+                          src={anime.images?.jpg?.image_url || anime.images?.jpg?.large_image_url}
+                          alt={anime.title}
+                          className="w-full h-48 object-cover"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = 'https://placehold.co/300x200/F0F0F0/333333?text=No+Image';
+                          }}
+                        />
+                        <div className="absolute top-2 right-2 bg-primary-light dark:bg-primary-dark text-white text-xs px-2 py-1 rounded-full">
+                          #{anime.popularity || 'N/A'}
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-text-light dark:text-text-dark mb-2 line-clamp-2">
+                          {anime.title}
+                        </h3>
+                        <div className="flex items-center justify-between text-sm text-text-muted-light dark:text-text-muted-dark">
+                          <span>{anime.type || 'TV'}</span>
+                          {anime.score && (
+                            <div className="flex items-center gap-1">
+                              <Star size={14} className="text-yellow-400 fill-yellow-400" />
+                              <span>{anime.score}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">😔</div>
+                <h3 className="text-xl font-semibold text-text-light dark:text-text-dark mb-2">
+                  {translate('Nenhum anime em alta encontrado')}
+                </h3>
+                <p className="text-text-muted-light dark:text-text-muted-dark">
+                  {translate('Tente novamente mais tarde.')}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -272,15 +391,106 @@ const RecommendationsPage = () => {
               {translate('Descobertas')}
             </h2>
             
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">🌟</div>
-              <h3 className="text-xl font-semibold text-text-light dark:text-text-dark mb-2">
-                {translate('Em desenvolvimento')}
-              </h3>
-              <p className="text-text-muted-light dark:text-text-muted-dark">
-                {translate('Esta funcionalidade será implementada em breve!')}
-              </p>
-            </div>
+            {isLoadingDiscovery ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
+              </div>
+            ) : discoveryError ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">😔</div>
+                <h3 className="text-xl font-semibold text-text-light dark:text-text-dark mb-2">
+                  {translate('Erro ao carregar')}
+                </h3>
+                <p className="text-text-muted-light dark:text-text-muted-dark mb-6">
+                  {discoveryError}
+                </p>
+                <button
+                  onClick={fetchDiscoveryAnimes}
+                  className="inline-flex items-center gap-2 bg-primary-light dark:bg-primary-dark text-white px-6 py-3 rounded-lg hover:opacity-90 transition-opacity"
+                >
+                  <RefreshCw size={18} />
+                  {translate('Tentar Novamente')}
+                </button>
+              </div>
+            ) : discoveryAnimes.length > 0 ? (
+              <div>
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-text-light dark:text-text-dark mb-3">
+                    {translate('Gêneros Populares')}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {popularGenres.map((genre) => (
+                      <button
+                        key={genre.mal_id}
+                        onClick={() => handleGenreClick(genre.mal_id)}
+                        className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                          selectedGenre === genre.mal_id
+                            ? 'bg-primary-light dark:bg-primary-dark text-white'
+                            : 'bg-gray-200 dark:bg-gray-700 text-text-light dark:text-text-dark hover:bg-gray-300 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        {genre.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {discoveryAnimes.map((anime) => (
+                    <div
+                      key={anime.mal_id}
+                      className="bg-card-light dark:bg-card-dark rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                    >
+                      <Link to={`/anime/${anime.mal_id}`}>
+                        <div className="relative">
+                          <img
+                            src={anime.images?.jpg?.image_url || anime.images?.jpg?.large_image_url}
+                            alt={anime.title}
+                            className="w-full h-48 object-cover"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = 'https://placehold.co/300x200/F0F0F0/333333?text=No+Image';
+                            }}
+                          />
+                          {anime.genres && anime.genres.length > 0 && (
+                            <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
+                              {anime.genres[0].name}
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <h3 className="font-semibold text-text-light dark:text-text-dark mb-2 line-clamp-2">
+                            {anime.title}
+                          </h3>
+                          <div className="flex items-center justify-between text-sm text-text-muted-light dark:text-text-muted-dark">
+                            <span>{anime.type || 'TV'}</span>
+                            {anime.score && (
+                              <div className="flex items-center gap-1">
+                                <Star size={14} className="text-yellow-400 fill-yellow-400" />
+                                <span>{anime.score}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">😔</div>
+                <h3 className="text-xl font-semibold text-text-light dark:text-text-dark mb-2">
+                  {translate('Nenhum anime encontrado')}
+                </h3>
+                <p className="text-text-muted-light dark:text-text-muted-dark">
+                  {translate('Tente selecionar um gênero diferente.')}
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

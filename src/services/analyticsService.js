@@ -1,5 +1,5 @@
 // src/services/analyticsService.js
-import { getAnimeDetailsById } from './jikanService.js';
+// Import removed - not used
 
 class AnalyticsService {
   constructor() {

@@ -40,21 +40,8 @@ const AnimeDetailPage = () => {
       try {
         console.log('📡 Chamando Jikan API para ID:', id);
         
-        // Primeiro, tentar buscar informações básicas para obter o título
-        let animeTitle = null;
-        try {
-          // Tentar buscar informações básicas primeiro para obter o título
-          const basicInfo = await fetch(`https://api.jikan.moe/v4/anime/${id}`).then(r => r.json());
-          if (basicInfo?.data?.title) {
-            animeTitle = basicInfo.data.title;
-            console.log('📝 Título encontrado para mapeamento:', animeTitle);
-          }
-        } catch (titleError) {
-          console.log('⚠️ Não foi possível obter título básico, continuando sem mapeamento...');
-        }
-        
-        // Agora buscar detalhes completos com mapeamento
-        const detailsResponse = await getAnimeDetailsById(id, animeTitle);
+        // Buscar detalhes completos diretamente pelo ID
+        const detailsResponse = await getAnimeDetailsById(id);
         console.log('✅ Resposta da Jikan API:', detailsResponse);
         
         if (detailsResponse?.data) {

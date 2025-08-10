@@ -13,7 +13,7 @@ const MyRatingsPage = () => {
     const fetchRatedAnimes = async () => {
       setIsLoading(true);
       setError(null);
-      const animes = [];
+      // Variable removed - not used
 
       // localStorage não está disponível no ambiente de execução desta ferramenta.
       // Simular um array vazio de chaves para evitar erro em Object.keys(localStorage).
