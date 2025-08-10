@@ -18,7 +18,7 @@ const ExplorePage = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const { canAccessAdultContent } = useAuth();
-  const { canAccess, getRestrictionMessage } = useAdultContent();
+  const { canAccess } = useAdultContent();
 
   useEffect(() => {
     loadGenres();

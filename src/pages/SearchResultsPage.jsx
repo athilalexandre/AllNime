@@ -23,7 +23,7 @@ const SearchResultsPage = () => {
   const [activeFilters, setActiveFilters] = useState({});
   const navigate = useNavigate();
   const { canAccessAdultContent } = useAuth();
-  const { canAccess, getRestrictionMessage } = useAdultContent();
+  const { canAccess } = useAdultContent();
 
   useEffect(() => {
     if (!searchTerm.trim()) return;

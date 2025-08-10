@@ -1,16 +1,18 @@
 // src/pages/RecommendationsPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, Star, RefreshCw } from 'lucide-react';
+import { Eye, Star, RefreshCw, Play, Clock, Heart } from 'lucide-react';
 import { recommendationService } from '../services/recommendationService.js';
 import { useLanguage } from '../components/contexts/useLanguage';
 import SkeletonCard from '../components/common/SkeletonCard';
 import AdultContentWarning from '../components/ui/AdultContentWarning';
 import { useAdultContent } from '../hooks/useAdultContent';
+import { useAuth } from '../components/contexts/useAuth';
 
 const RecommendationsPage = () => {
   const { translate } = useLanguage();
   const { canAccess } = useAdultContent();
+  const { canAccessAdultContent } = useAuth();
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('personal');
@@ -25,55 +27,101 @@ const RecommendationsPage = () => {
 
   useEffect(() => {
     loadRecommendations();
-  }, []);
+  }, [loadRecommendations]);
 
-  const loadRecommendations = async () => {
+  const loadRecommendations = useCallback(async () => {
     setLoading(true);
     try {
       const personalRecs = await recommendationService.generateRecommendations(12);
-      setRecommendations(personalRecs);
+      // Filter adult content if user cannot access it
+      const filteredRecs = canAccess() ? personalRecs : personalRecs.filter(anime => {
+        if (!anime.genres || !Array.isArray(anime.genres)) return true;
+        const adultGenres = ['Hentai', 'Ecchi', 'Yuri', 'Yaoi', 'Harem'];
+        return !anime.genres.some(genre =>
+          adultGenres.some(adultGenre =>
+            genre.name && genre.name.toLowerCase().includes(adultGenre.toLowerCase())
+          )
+        );
+      });
+      setRecommendations(filteredRecs);
     } catch (error) {
       console.error('Erro ao carregar recomendações:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [canAccess]);
 
-  const fetchTrendingAnimes = async () => {
+  const fetchTrendingAnimes = useCallback(async () => {
     setIsLoadingTrending(true);
     setTrendingError(null);
     try {
-      const response = await fetch('https://api.jikan.moe/v4/top/anime');
+      // Use sfw parameter based on adult content access
+      const sfwParam = canAccessAdultContent ? '' : '&sfw=true';
+      const response = await fetch(`https://api.jikan.moe/v4/top/anime?${sfwParam}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setTrendingAnimes(data.data);
+      let filteredAnimes = data.data;
+      
+      // Additional filtering for adult content if needed
+      if (!canAccess()) {
+        const adultGenres = ['Hentai', 'Ecchi', 'Yuri', 'Yaoi', 'Harem'];
+        filteredAnimes = data.data.filter(anime => {
+          if (!anime.genres || !Array.isArray(anime.genres)) {
+            return true;
+          }
+          return !anime.genres.some(genre =>
+            adultGenres.some(adultGenre =>
+              genre.name && genre.name.toLowerCase().includes(adultGenre.toLowerCase())
+            )
+          );
+        });
+      }
+      
+      setTrendingAnimes(filteredAnimes);
     } catch (error) {
       setTrendingError(`Erro ao carregar animes em alta: ${error.message}`);
       console.error('Erro ao carregar animes em alta:', error);
     } finally {
       setIsLoadingTrending(false);
     }
-  };
+  }, [canAccessAdultContent, canAccess]);
 
   const fetchDiscoveryAnimes = useCallback(async () => {
     setIsLoadingDiscovery(true);
     setDiscoveryError(null);
     try {
-      const response = await fetch(`https://api.jikan.moe/v4/anime?genres=${selectedGenre}&order_by=popularity&sort=desc`);
+      // Use sfw parameter based on adult content access
+      const sfwParam = canAccessAdultContent ? '' : '&sfw=true';
+      const response = await fetch(`https://api.jikan.moe/v4/anime?genres=${selectedGenre}&order_by=popularity&sort=desc${sfwParam}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setDiscoveryAnimes(data.data);
+      let filteredAnimes = data.data;
+      
+      // Additional filtering for adult content if needed
+      if (!canAccess()) {
+        const adultGenres = ['Hentai', 'Ecchi', 'Yuri', 'Yaoi', 'Harem'];
+        filteredAnimes = data.data.filter(anime => {
+          if (!anime.genres || !Array.isArray(anime.genres)) return true;
+          return !anime.genres.some(genre =>
+            adultGenres.some(adultGenre =>
+              genre.name && genre.name.toLowerCase().includes(adultGenre.toLowerCase())
+            )
+          );
+        });
+      }
+      
+      setDiscoveryAnimes(filteredAnimes);
     } catch (error) {
       setDiscoveryError(`Erro ao carregar animes por gênero: ${error.message}`);
       console.error('Erro ao carregar animes por gênero:', error);
     } finally {
       setIsLoadingDiscovery(false);
     }
-  }, [selectedGenre]);
+  }, [selectedGenre, canAccessAdultContent, canAccess]);
 
   const fetchPopularGenres = async () => {
     try {
@@ -91,7 +139,7 @@ const RecommendationsPage = () => {
   useEffect(() => {
     fetchTrendingAnimes();
     fetchPopularGenres();
-  }, []);
+  }, [canAccessAdultContent, fetchTrendingAnimes]);
 
   useEffect(() => {
     if (selectedGenre) {
@@ -145,6 +193,19 @@ const RecommendationsPage = () => {
           {translate('Descubra animes baseados no que você já assistiu e avaliou')}
         </p>
       </div>
+
+      {/* Aviso de Conteúdo Adulto */}
+      {!canAccess() && (
+        <div className="mb-8">
+          <AdultContentWarning
+            title="Conteúdo Adulto Filtrado"
+            message="As recomendações foram filtradas para excluir conteúdo adulto. Faça login e verifique se você é maior de 18 anos para acessar todas as recomendações."
+            showDetails={true}
+            onAction={() => window.location.href = '/'}
+            actionText="Fazer Login"
+          />
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex flex-wrap gap-2 mb-6">
