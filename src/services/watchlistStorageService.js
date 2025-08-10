@@ -7,7 +7,7 @@ const LIST_TYPES = {
   DROPPED: 'droppedList',
 };
 
-const MANUAL_ANIME_KEY = 'manualAnimes';
+
 
 const getListFromStorage = (listKey) => {
   if (typeof window === 'undefined' || !window.localStorage) {
@@ -30,33 +30,7 @@ const saveListToStorage = (listKey, list) => {
   localStorage.setItem(listKey, JSON.stringify(list));
 };
 
-// CRUD para animes manuais
-const getManualAnimes = () => getListFromStorage(MANUAL_ANIME_KEY);
 
-const saveManualAnimes = (animes) => saveListToStorage(MANUAL_ANIME_KEY, animes);
-
-const addManualAnime = (anime) => {
-  const animes = getManualAnimes();
-  animes.unshift(anime); // Adiciona no início
-  saveManualAnimes(animes);
-};
-
-const updateManualAnime = (id, updatedAnime) => {
-  let animes = getManualAnimes();
-  animes = animes.map(a => a.id === id ? { ...a, ...updatedAnime } : a);
-  saveManualAnimes(animes);
-};
-
-const removeManualAnime = (id) => {
-  let animes = getManualAnimes();
-  animes = animes.filter(a => a.id !== id);
-  saveManualAnimes(animes);
-};
-
-const getManualAnimeById = (id) => {
-  const animes = getManualAnimes();
-  return animes.find(a => a.id === id) || null;
-};
 
 // Função interna para remover de uma lista específica, usada por addToWatchlist
 const _removeFromSpecificList = (listTypeKey, animeId) => {
@@ -136,10 +110,4 @@ export {
   removeFromWatchlist,
   isInWatchlist,
   getAnimeWatchlistStatus,
-  getManualAnimes,
-  saveManualAnimes,
-  addManualAnime,
-  updateManualAnime,
-  removeManualAnime,
-  getManualAnimeById,
 };

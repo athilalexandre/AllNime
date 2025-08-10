@@ -1,16 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getAnimeDetailsById } from '../services/jikanService';
-import { getManualAnimeById, updateManualAnime } from '../services/watchlistStorageService';
 import { Star } from 'lucide-react';
 
 const EditAnimePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [anime, setAnime] = useState(null);
-  const [isManual, setIsManual] = useState(false);
-  const [title, setTitle] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
   const [userRating, setUserRating] = useState(0);
   const [userOpinion, setUserOpinion] = useState('');
   const [saveStatus, setSaveStatus] = useState({ message: '', type: '' });
@@ -18,24 +14,10 @@ const EditAnimePage = () => {
 
   useEffect(() => {
     const fetchAnimeData = async () => {
-      // Primeiro tenta buscar como manual
-      const manual = getManualAnimeById(id);
-      if (manual) {
-        setIsManual(true);
-        setAnime(manual);
-        setTitle(manual.title);
-        setImageUrl(manual.imageUrl);
-        setUserRating(manual.rating);
-        setUserOpinion(manual.opinion);
-        return;
-      }
-      // Se não for manual, busca pelo Jikan
       try {
         const res = await getAnimeDetailsById(id);
         setAnime(res.data);
-        setTitle(res.data.title);
-        setImageUrl(res.data.images?.jpg?.large_image_url || res.data.images?.jpg?.image_url || '');
-
+        
         // Busca avaliação do localStorage para animes do Jikan
         if (typeof window !== 'undefined' && window.localStorage) {
           const saved = localStorage.getItem(`animeRating_${id}`);
@@ -55,23 +37,13 @@ const EditAnimePage = () => {
 
   const handleSave = (e) => {
     e.preventDefault();
-    if (!title.trim()) {
-      setSaveStatus({ message: 'O título é obrigatório.', type: 'error' });
-      return;
-    }
-
-    if (isManual) {
-      updateManualAnime(id, { title, imageUrl, rating: userRating, opinion: userOpinion });
-      setSaveStatus({ message: 'Anime manual atualizado com sucesso!', type: 'success' });
-      setTimeout(() => navigate('/my-ratings'), 1200);
+    
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem(`animeRating_${id}`, JSON.stringify({ rating: userRating, opinion: userOpinion }));
+      setSaveStatus({ message: 'Avaliação salva com sucesso!', type: 'success' });
+      setTimeout(() => navigate(`/anime/${id}`), 1200);
     } else {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem(`animeRating_${id}`, JSON.stringify({ rating: userRating, opinion: userOpinion }));
-        setSaveStatus({ message: 'Avaliação salva com sucesso!', type: 'success' });
-        setTimeout(() => navigate(`/anime/${id}`), 1200);
-      } else {
-        setSaveStatus({ message: 'Não foi possível salvar a avaliação.', type: 'error' });
-      }
+      setSaveStatus({ message: 'Não foi possível salvar a avaliação.', type: 'error' });
     }
     setTimeout(() => { setSaveStatus({ message: '', type: '' }); }, 3000);
   };
@@ -105,9 +77,9 @@ const EditAnimePage = () => {
   if (error) return <p className="text-center p-10 text-red-500 dark:text-red-400">{error}</p>;
   if (!anime) return <p className="text-center p-10 text-text-muted-light dark:text-text-muted-dark">Carregando detalhes do anime...</p>;
 
-  // Dados para exibição (sempre do Jikan API ou manual)
-  const displayImage = isManual ? anime.imageUrl : (anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || '');
-  const displayTitle = isManual ? anime.title : (anime.title || 'N/A');
+  // Dados para exibição
+  const displayImage = anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || '';
+  const displayTitle = anime.title || 'N/A';
   const displayJapaneseTitle = anime.title_japanese || 'N/A';
   const displaySynopsis = anime.synopsis ? anime.synopsis.replace(/\n/g, '\n\n') : 'N/A';
   const displayClassification = anime.rating || 'N/A';
@@ -117,12 +89,12 @@ const EditAnimePage = () => {
 
   return (
     <div className="container mx-auto p-4 pt-20 text-text-light dark:text-text-dark">
-      <Link to={isManual ? '/' : `/anime/${id}`} className="text-primary-light dark:text-primary-dark hover:underline mb-4 inline-block">
+      <Link to={`/anime/${id}`} className="text-primary-light dark:text-primary-dark hover:underline mb-4 inline-block">
         &larr; Voltar
       </Link>
 
       {/* Banner Image */}
-      {!isManual && anime.background && (
+      {anime.background && (
         <div className="relative w-full h-64 sm:h-80 md:h-96 rounded-lg overflow-hidden mb-8 shadow-xl">
           <img
             src={anime.background}
@@ -205,36 +177,10 @@ const EditAnimePage = () => {
             )}
           </div>
 
-          {/* Formulário de Edição (agora uma seção) */}
+          {/* Formulário de Edição */}
           <div className="bg-card-light dark:bg-card-dark p-6 rounded-lg shadow-md mt-8">
-            <h2 className="text-2xl font-bold mb-4">Editar Informações</h2>
+            <h2 className="text-2xl font-bold mb-4">Editar Avaliação</h2>
             <form onSubmit={handleSave} className="space-y-4">
-              {isManual && (
-                <>
-                  <div>
-                    <label htmlFor="edit-title" className="block font-semibold mb-1">Título</label>
-                    <input
-                      id="edit-title"
-                      type="text"
-                      className="w-full p-2 rounded border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark"
-                      value={title}
-                      onChange={e => setTitle(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="edit-imageUrl" className="block font-semibold mb-1">Imagem (URL)</label>
-                    <input
-                      id="edit-imageUrl"
-                      type="url"
-                      className="w-full p-2 rounded border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark"
-                      value={imageUrl}
-                      onChange={e => setImageUrl(e.target.value)}
-                      required
-                    />
-                  </div>
-                </>
-              )}
               <div>
                 <label htmlFor="edit-rating" className="block font-semibold mb-1">Sua Nota</label>
                 <div className="flex items-center">
@@ -259,11 +205,9 @@ const EditAnimePage = () => {
                 <button type="submit" className="px-6 py-2 bg-primary-light dark:bg-primary-dark text-white rounded-lg hover:opacity-90 transition-opacity">
                   Salvar
                 </button>
-                {!isManual && (
-                  <button type="button" onClick={handleRemoveRating} className="px-6 py-2 bg-red-600 text-white rounded-lg hover:opacity-90 transition-opacity">
-                    Remover Avaliação
-                  </button>
-                )}
+                <button type="button" onClick={handleRemoveRating} className="px-6 py-2 bg-red-600 text-white rounded-lg hover:opacity-90 transition-opacity">
+                  Remover Avaliação
+                </button>
               </div>
               {saveStatus.message && (
                 <p className={`mt-4 ${saveStatus.type === 'success' ? 'text-green-500' : 'text-red-500'}`}>
@@ -274,7 +218,7 @@ const EditAnimePage = () => {
           </div>
 
           {/* Trailer */}
-          {!isManual && displayTrailerId && (
+          {displayTrailerId && (
             <div className="bg-card-light dark:bg-card-dark p-6 rounded-lg shadow-md mt-8">
               <h2 className="text-2xl font-bold mb-4">Trailer</h2>
               <div className="relative" style={{ paddingBottom: '56.25%', height: 0 }}>
@@ -291,7 +235,7 @@ const EditAnimePage = () => {
           )}
 
           {/* Links Externos */}
-          {!isManual && displayExternalLinks.length > 0 && (
+          {displayExternalLinks.length > 0 && (
             <div className="bg-card-light dark:bg-card-dark p-6 rounded-lg shadow-md mt-8">
               <h2 className="text-2xl font-bold mb-4">Links Externos</h2>
               <ul className="list-disc list-inside space-y-2">

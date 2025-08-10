@@ -7,21 +7,37 @@ const axiosInstance = axios.create({
   timeout: 15000, // 15 segundos de timeout
 });
 
-export const searchAnimes = async (query) => {
+export const searchAnimes = async (query, options = {}) => {
   if (!query || query.trim() === '') {
     return { data: [], pagination: { has_next_page: false } };
   }
 
+  const {
+    page = 1,
+    limit = 25,
+    genre = null,
+    type = null,
+    status = null,
+    orderBy = 'popularity',
+    sort = 'desc'
+  } = options;
+
   try {
-    const response = await axiosInstance.get(`${API_BASE_URL}/anime`, {
-      params: {
-        q: query.trim(),
-        sfw: true,
-        limit: 25,
-        order_by: "popularity",
-        sort: "desc"
-      }
-    });
+    const params = {
+      q: query.trim(),
+      sfw: true,
+      page,
+      limit,
+      order_by: orderBy,
+      sort
+    };
+
+    // Adicionar filtros opcionais
+    if (genre) params.genres = genre;
+    if (type) params.type = type;
+    if (status) params.status = status;
+
+    const response = await axiosInstance.get(`${API_BASE_URL}/anime`, { params });
 
     if (response.data?.data && Array.isArray(response.data.data)) {
       const filtered = response.data.data.filter(item => 
@@ -41,6 +57,66 @@ export const searchAnimes = async (query) => {
     return { data: [], pagination: { has_next_page: false } };
   } catch (error) {
     console.error('Erro ao buscar animes:', error.response?.data || error.message);
+    return { data: [], pagination: { has_next_page: false } };
+  }
+};
+
+// Nova função para busca avançada
+export const searchAnimesAdvanced = async (filters = {}) => {
+  const {
+    query = '',
+    page = 1,
+    limit = 25,
+    genre = null,
+    type = null,
+    status = null,
+    minScore = null,
+    maxScore = null,
+    orderBy = 'popularity',
+    sort = 'desc'
+  } = filters;
+
+  try {
+    const params = {
+      sfw: true,
+      page,
+      limit,
+      order_by: orderBy,
+      sort
+    };
+
+    // Adicionar query se fornecida
+    if (query && query.trim()) {
+      params.q = query.trim();
+    }
+
+    // Adicionar filtros opcionais
+    if (genre) params.genres = genre;
+    if (type) params.type = type;
+    if (status) params.status = status;
+    if (minScore !== null) params.min_score = minScore;
+    if (maxScore !== null) params.max_score = maxScore;
+
+    const response = await axiosInstance.get(`${API_BASE_URL}/anime`, { params });
+
+    if (response.data?.data && Array.isArray(response.data.data)) {
+      const filtered = response.data.data.filter(item => 
+        item?.approved !== false && 
+        item?.mal_id && 
+        item?.mal_id > 0 &&
+        item?.title && 
+        item?.title.trim() !== ''
+      );
+      
+      return { 
+        ...response.data, 
+        data: filtered 
+      };
+    }
+    
+    return { data: [], pagination: { has_next_page: false } };
+  } catch (error) {
+    console.error('Erro na busca avançada:', error.response?.data || error.message);
     return { data: [], pagination: { has_next_page: false } };
   }
 };

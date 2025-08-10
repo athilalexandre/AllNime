@@ -1,105 +1,99 @@
 // src/pages/HomePage.jsx
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Search as SearchIcon } from 'lucide-react';
-import { getManualAnimes, addManualAnime } from '../services/watchlistStorageService';
-// uuid import removed - not used
-
+import React from 'react';
+import { Link } from 'react-router-dom';
+import SearchBar from '../components/features/search/SearchBar';
+import MyTopRatedAnimeBlock from '../components/features/home/MyTopRatedAnimeBlock';
 import SeasonalAnimeBlock from '../components/features/home/SeasonalAnimeBlock';
 import TopRatedAnimeBlock from '../components/features/home/TopRatedAnimeBlock';
-import MyTopRatedAnimeBlock from '../components/features/home/MyTopRatedAnimeBlock';
-import ManualAnimeModal from '../components/features/home/ManualAnimeModal';
 
 const HomePage = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [manualAnimes, setManualAnimes] = useState(getManualAnimes());
-  const navigate = useNavigate();
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchTerm.trim().length < 2) return;
-    navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
-  };
-
-  const handleAddManualAnime = (anime) => {
-    addManualAnime(anime);
-    setManualAnimes(getManualAnimes());
-    setShowModal(false);
-  };
-
   return (
-    <div className="space-y-10 md:space-y-16 min-h-screen flex flex-col justify-between">
-      <div>
-        <button
-          className="mb-6 px-4 py-2 bg-primary-light text-white rounded-lg shadow hover:bg-primary-dark transition-colors font-bold"
-          onClick={() => setShowModal(true)}
-        >
-          Adicionar Anime Manualmente
-        </button>
-        {showModal && (
-          <ManualAnimeModal
-            onClose={() => setShowModal(false)}
-            onSave={handleAddManualAnime}
-          />
-        )}
-        {manualAnimes.length > 0 && (
-          <section className="mb-10">
-            <h2 className="text-2xl font-bold mb-4">Meus Animes Cadastrados</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {manualAnimes.map(anime => (
-                <div key={anime.id} className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg overflow-hidden flex flex-col">
-                  <img src={anime.imageUrl} alt={anime.title} className="w-full h-48 object-cover" />
-                  <div className="p-3 flex flex-col flex-grow">
-                    <h3 className="text-lg font-semibold text-primary-light dark:text-primary-dark mb-1 truncate" title={anime.title}>{anime.title}</h3>
-                    <div className="my-2">
-                      <span className="text-yellow-400 font-bold">{anime.rating}/5</span>
-                    </div>
-                    <p className="text-sm text-text-muted-light dark:text-text-muted-dark mb-3 flex-grow break-words">
-                      Opinião: {anime.opinion || <span className="italic">Nenhuma opinião.</span>}
-                    </p>
-                  </div>
-                </div>
-              ))}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
+        <div className="relative z-10 px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl">
+              Anime Master
+            </h1>
+            <p className="max-w-2xl mx-auto mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
+              Descubra, organize e acompanhe seus animes favoritos. Uma plataforma completa para gerenciar sua jornada pelo mundo dos animes.
+            </p>
+            
+            {/* Search Bar */}
+            <div className="mt-8 max-w-2xl mx-auto">
+              <SearchBar />
             </div>
-          </section>
-        )}
-        <section aria-labelledby="search-title">
-          <h2 id="search-title" className="text-2xl font-bold mb-2">Buscar Animes</h2>
-          <form className="flex items-center mb-4" onSubmit={handleSearch}>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Digite o nome de um anime..."
-              className="border border-gray-300 dark:border-gray-600 rounded-l px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
-            />
-            <button type="submit" className="bg-primary-light text-white px-4 py-2 rounded-r font-bold hover:bg-primary-dark transition-colors">Buscar</button>
-          </form>
-        </section>
+          </div>
+        </div>
+      </div>
 
-        <section aria-labelledby="seasonal-anime-title">
-          <h2 id="seasonal-anime-title" className="text-2xl sm:text-3xl font-bold text-text-main-light dark:text-text-main-dark mb-4 sm:mb-6 px-4 sm:px-0"> {/* px para mobile, reset para desktop se o container do App.jsx não for suficiente */}
-            Animes da Temporada
-          </h2>
+      {/* Features Grid */}
+      <div className="px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="text-center">
+            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-blue-100 dark:bg-blue-900 rounded-full">
+              <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">Descubra Animes</h3>
+            <p className="text-gray-600 dark:text-gray-400">Encontre novos animes através de nossa busca avançada e recomendações personalizadas.</p>
+          </div>
+
+          <div className="text-center">
+            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900 rounded-full">
+              <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">Organize sua Lista</h3>
+            <p className="text-gray-600 dark:text-gray-400">Mantenha controle dos animes que está assistindo, planeja assistir ou já completou.</p>
+          </div>
+
+          <div className="text-center">
+            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-purple-100 dark:bg-purple-900 rounded-full">
+              <svg className="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+            </div>
+            <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">Avalie e Comente</h3>
+            <p className="text-gray-600 dark:text-gray-400">Compartilhe suas opiniões e veja o que outros usuários pensam sobre os animes.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Content Blocks */}
+      <div className="px-4 pb-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div className="space-y-12">
           <SeasonalAnimeBlock />
-        </section>
-
-        <section aria-labelledby="top-rated-anime-title" className="mt-10 md:mt-16">
-          <h2 id="top-rated-anime-title" className="text-2xl sm:text-3xl font-bold text-text-main-light dark:text-text-main-dark mb-4 sm:mb-6 px-4 sm:px-0">
-            Mais Bem Avaliados (Geral)
-          </h2>
           <TopRatedAnimeBlock />
-        </section>
-
-        <section aria-labelledby="my-top-rated-anime-title" className="mt-10 md:mt-16">
-          <h2 id="my-top-rated-anime-title" className="text-2xl sm:text-3xl font-bold text-text-main-light dark:text-text-main-dark mb-4 sm:mb-6 px-4 sm:px-0">
-            Meus Favoritos
-          </h2>
           <MyTopRatedAnimeBlock />
-        </section>
+        </div>
+      </div>
+
+      {/* CTA Section */}
+      <div className="px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
+            Comece sua jornada hoje
+          </h2>
+          <p className="max-w-2xl mx-auto mt-4 text-lg text-gray-600 dark:text-gray-300">
+            Explore milhares de animes, crie suas listas personalizadas e descubra novos favoritos.
+          </p>
+          <div className="mt-8">
+            <Link
+              to="/explore"
+              className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Explorar Animes
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
+
 export default HomePage;
