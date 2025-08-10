@@ -39,7 +39,22 @@ const AnimeDetailPage = () => {
       
       try {
         console.log('📡 Chamando Jikan API para ID:', id);
-        const detailsResponse = await getAnimeDetailsById(id);
+        
+        // Primeiro, tentar buscar informações básicas para obter o título
+        let animeTitle = null;
+        try {
+          // Tentar buscar informações básicas primeiro para obter o título
+          const basicInfo = await fetch(`https://api.jikan.moe/v4/anime/${id}`).then(r => r.json());
+          if (basicInfo?.data?.title) {
+            animeTitle = basicInfo.data.title;
+            console.log('📝 Título encontrado para mapeamento:', animeTitle);
+          }
+        } catch (titleError) {
+          console.log('⚠️ Não foi possível obter título básico, continuando sem mapeamento...');
+        }
+        
+        // Agora buscar detalhes completos com mapeamento
+        const detailsResponse = await getAnimeDetailsById(id, animeTitle);
         console.log('✅ Resposta da Jikan API:', detailsResponse);
         
         if (detailsResponse?.data) {
@@ -79,7 +94,13 @@ const AnimeDetailPage = () => {
 
       } catch (err) {
         console.error("❌ Erro ao buscar detalhes do anime:", err);
-        setError(translate('Não foi possível carregar os detalhes do anime.'));
+        
+        // Verificar se é um erro de ID não encontrado
+        if (err.message.includes('não foi encontrado') || err.message.includes('não existe')) {
+          setError(translate('Este anime não foi encontrado na base de dados.'));
+        } else {
+          setError(translate('Não foi possível carregar os detalhes do anime.'));
+        }
       } finally {
         setIsLoading(false);
         console.log('🏁 Busca de detalhes concluída');

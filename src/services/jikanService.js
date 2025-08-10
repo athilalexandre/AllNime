@@ -1,13 +1,11 @@
 import axios from 'axios';
+import { animeMappingService } from './animeMappingService.js';
 
 const API_BASE_URL = 'https://api.jikan.moe/v4';
 
-// Configuração do axios com timeout e retry
+// Configuração do axios com timeout (sem User-Agent problemático)
 const axiosInstance = axios.create({
   timeout: 15000, // 15 segundos de timeout
-  headers: {
-    'User-Agent': 'AnimeMaster/1.0'
-  }
 });
 
 export const searchAnimes = async (query) => {
@@ -40,47 +38,110 @@ export const searchAnimes = async (query) => {
   }
 };
 
-export const getAnimeDetailsById = async (id) => {
+export const getAnimeDetailsById = async (id, title = null) => {
+  // Validar se o ID é válido
+  if (!id || isNaN(parseInt(id)) || parseInt(id) <= 0) {
+    throw new Error('ID de anime inválido');
+  }
+
+  let finalId = id;
+  
+  // Tentar mapear o ID se for inválido
+  try {
+    const mappedId = await animeMappingService.getMappedId(id, title);
+    if (mappedId !== id) {
+      console.log(`🔄 ID mapeado: ${id} → ${mappedId}`);
+      finalId = mappedId;
+    }
+  } catch (mappingError) {
+    console.warn(`⚠️ Erro no mapeamento de ID ${id}:`, mappingError.message);
+  }
+
   try {
     // Primeira tentativa: endpoint /full
-    const response = await axiosInstance.get(`${API_BASE_URL}/anime/${id}/full`);
-    return response.data;
+    const response = await axiosInstance.get(`${API_BASE_URL}/anime/${finalId}/full`);
+    if (response.data?.data) {
+      return response.data;
+    }
+    throw new Error('Resposta da API não contém dados válidos');
   } catch (error) {
-    console.warn(`Endpoint /full falhou para anime ${id}, tentando endpoint básico...`);
+    console.warn(`Endpoint /full falhou para anime ${finalId}, tentando endpoint básico...`);
     
     try {
       // Segunda tentativa: endpoint básico
-      const fallback = await axiosInstance.get(`${API_BASE_URL}/anime/${id}`);
-      return fallback.data;
+      const fallback = await axiosInstance.get(`${API_BASE_URL}/anime/${finalId}`);
+      if (fallback.data?.data) {
+        return fallback.data;
+      }
+      throw new Error('Resposta do fallback não contém dados válidos');
     } catch (fallbackError) {
-      console.error(`Fallback falhou ao buscar anime ${id}:`, fallbackError.response?.data || fallbackError.message);
+      console.error(`Fallback falhou ao buscar anime ${finalId}:`, fallbackError.response?.data || fallbackError.message);
       
-      // Terceira tentativa: endpoint /characters para verificar se o anime existe
+      // Terceira tentativa: verificar se o anime existe através de busca por ID
       try {
-        const characterCheck = await axiosInstance.get(`${API_BASE_URL}/anime/${id}/characters`);
-        if (characterCheck.data) {
-          // Se conseguimos buscar personagens, o anime existe mas os detalhes falharam
-          // Retornar dados mínimos para não quebrar a UI
+        const searchResponse = await axiosInstance.get(`${API_BASE_URL}/anime`, {
+          params: { mal_id: finalId, limit: 1 }
+        });
+        
+        if (searchResponse.data?.data && searchResponse.data.data.length > 0) {
+          const animeData = searchResponse.data.data[0];
+          // Retornar dados mínimos baseados na busca
           return {
             data: {
-              mal_id: id,
-              title: `Anime ID: ${id}`,
-              title_japanese: 'N/A',
-              synopsis: 'Informações temporariamente indisponíveis.',
-              images: { jpg: { image_url: 'https://placehold.co/250x350/F0F0F0/333333?text=Loading...' } },
-              rating: 'N/A',
-              popularity: null,
-              trailer: null,
-              external: []
+              mal_id: parseInt(finalId),
+              title: animeData.title || `Anime ID: ${finalId}`,
+              title_japanese: animeData.title_japanese || 'N/A',
+              synopsis: animeData.synopsis || 'Informações temporariamente indisponíveis.',
+              images: animeData.images || { jpg: { image_url: 'https://placehold.co/250x350/F0F0F0/333333?text=Loading...' } },
+              rating: animeData.rating || 'N/A',
+              popularity: animeData.popularity || null,
+              trailer: animeData.trailer || null,
+              external: animeData.external || []
             }
           };
         }
-      } catch (charError) {
-        console.error(`Verificação de personagens falhou para anime ${id}:`, charError.message);
+      } catch (searchError) {
+        console.error(`Busca por ID falhou para anime ${finalId}:`, searchError.message);
       }
       
-      // Se tudo falhou, lançar erro
-      throw new Error(`Não foi possível carregar os detalhes do anime ${id}. Tente novamente mais tarde.`);
+      // Se tudo falhou, tentar buscar por título como último recurso
+      if (title) {
+        try {
+          console.log(`🆘 Último recurso: buscando por título "${title}"`);
+          const titleSearch = await searchAnimes(title);
+          if (titleSearch?.data && titleSearch.data.length > 0) {
+            const bestMatch = titleSearch.data[0];
+            console.log(`🎯 Encontrado anime por título: ${bestMatch.title} (ID: ${bestMatch.mal_id})`);
+            
+            // Armazenar no cache para futuras requisições
+            animeMappingService.idCache.set(id, bestMatch.mal_id);
+            
+            // Retornar dados do anime encontrado
+            return {
+              data: {
+                mal_id: bestMatch.mal_id,
+                title: bestMatch.title,
+                title_japanese: bestMatch.title_japanese || 'N/A',
+                synopsis: bestMatch.synopsis || 'Informações temporariamente indisponíveis.',
+                images: bestMatch.images || { jpg: { image_url: 'https://placehold.co/250x350/F0F0F0/333333?text=Loading...' } },
+                rating: bestMatch.rating || 'N/A',
+                popularity: bestMatch.popularity || null,
+                trailer: bestMatch.trailer || null,
+                external: bestMatch.external || []
+              }
+            };
+          }
+        } catch (titleError) {
+          console.error(`Busca por título falhou para "${title}":`, titleError.message);
+        }
+      }
+      
+      // Se tudo falhou, lançar erro específico
+      if (fallbackError.response?.status === 404) {
+        throw new Error(`Anime com ID ${finalId} não foi encontrado na base de dados.`);
+      } else {
+        throw new Error(`Não foi possível carregar os detalhes do anime ${finalId}. Tente novamente mais tarde.`);
+      }
     }
   }
 };
