@@ -16,7 +16,13 @@ export const searchAnimes = async (query) => {
       }
     });
     const filtered = Array.isArray(response.data?.data)
-      ? response.data.data.filter(item => item?.approved !== false)
+      ? response.data.data.filter(item => 
+          item?.approved !== false && 
+          item?.mal_id && 
+          item?.mal_id > 0 &&
+          item?.title && 
+          item?.title.trim() !== ''
+        )
       : [];
     return { ...response.data, data: filtered };
   } catch (error) {
@@ -49,7 +55,16 @@ export const getCurrentSeasonAnimes = async (page = 1, limit = 6) => {
     const response = await axios.get(`${API_BASE_URL}/seasons/now`, {
       params: { page, limit, sfw: true, filter: 'tv' }
     });
-    return response.data;
+    const filtered = Array.isArray(response.data?.data)
+      ? response.data.data.filter(item => 
+          item?.approved !== false && 
+          item?.mal_id && 
+          item?.mal_id > 0 &&
+          item?.title && 
+          item?.title.trim() !== ''
+        )
+      : [];
+    return { ...response.data, data: filtered };
   } catch (error) {
     console.error('Erro ao buscar animes da temporada da Jikan API:', error.response?.data || error.message);
     throw error;
@@ -61,7 +76,16 @@ export const getTopRatedAnimes = async (page = 1, limit = 6) => {
     const response = await axios.get(`${API_BASE_URL}/top/anime`, {
       params: { page, limit, sfw: true, type: 'tv' }
     });
-    return response.data;
+    const filtered = Array.isArray(response.data?.data)
+      ? response.data.data.filter(item => 
+          item?.approved !== false && 
+          item?.mal_id && 
+          item?.mal_id > 0 &&
+          item?.title && 
+          item?.title.trim() !== ''
+        )
+      : [];
+    return { ...response.data, data: filtered };
   } catch (error) {
     console.error('Erro ao buscar top animes da Jikan API:', error.response?.data || error.message);
     throw error;
@@ -91,7 +115,13 @@ export const getAnimes = async (page = 1, limit = 18, genreId = null) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/anime`, { params });
     const filtered = Array.isArray(response.data?.data)
-      ? response.data.data.filter(item => item?.approved !== false)
+      ? response.data.data.filter(item => 
+          item?.approved !== false && 
+          item?.mal_id && 
+          item?.mal_id > 0 &&
+          item?.title && 
+          item?.title.trim() !== ''
+        )
       : [];
     return { ...response.data, data: filtered };
   } catch (error) {
