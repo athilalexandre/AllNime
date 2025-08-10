@@ -1,5 +1,11 @@
 import React, { createContext, useMemo, useState } from 'react';
 
+// Available languages
+export const languages = {
+  pt: 'Português',
+  en: 'English'
+};
+
 // Language dictionaries
 const DICTS = {
   pt: {

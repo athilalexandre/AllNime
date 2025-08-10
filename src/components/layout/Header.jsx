@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import ThemeToggle from '../common/ThemeToggle';
 import DropdownMenu from '../common/DropdownMenu';
 import { Star, Eye, PlaySquare, CheckCheck, ArchiveX, Compass, Settings } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage, languages } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 
 const Header = () => {
