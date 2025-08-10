@@ -4,8 +4,9 @@ import { Link } from 'react-router-dom';
 import ThemeToggle from '../common/ThemeToggle';
 import DropdownMenu from '../common/DropdownMenu';
 import { Star, Eye, PlaySquare, CheckCheck, ArchiveX, Compass, Settings } from 'lucide-react';
-import { useLanguage, languages } from '../contexts/LanguageContext.jsx';
-import { useAuth } from '../contexts/AuthContext.jsx';
+import { useLanguage } from '../contexts/useLanguage';
+import { languages } from '../contexts/languageConstants';
+import { useAuth } from '../contexts/useAuth';
 
 const Header = () => {
   const { translate, setLanguage, language } = useLanguage();

@@ -7,7 +7,7 @@ const axiosInstance = axios.create({
   timeout: 15000, // 15 segundos de timeout
 });
 
-export const searchAnimes = async (query, options = {}) => {
+export const searchAnimes = async (query, options = {}, canAccessAdultContent = false) => {
   if (!query || query.trim() === '') {
     return { data: [], pagination: { has_next_page: false } };
   }
@@ -25,7 +25,7 @@ export const searchAnimes = async (query, options = {}) => {
   try {
     const params = {
       q: query.trim(),
-      sfw: true,
+      sfw: !canAccessAdultContent, // false se pode acessar conteúdo adulto, true se não pode
       page,
       limit,
       order_by: orderBy,
@@ -62,7 +62,7 @@ export const searchAnimes = async (query, options = {}) => {
 };
 
 // Nova função para busca avançada
-export const searchAnimesAdvanced = async (filters = {}) => {
+export const searchAnimesAdvanced = async (filters = {}, canAccessAdultContent = false) => {
   const {
     query = '',
     page = 1,
@@ -78,7 +78,7 @@ export const searchAnimesAdvanced = async (filters = {}) => {
 
   try {
     const params = {
-      sfw: true,
+      sfw: !canAccessAdultContent, // false se pode acessar conteúdo adulto, true se não pode
       page,
       limit,
       order_by: orderBy,
@@ -160,13 +160,13 @@ export const getAnimeDetailsById = async (id) => {
   }
 };
 
-export const getCurrentSeasonAnimes = async (page = 1, limit = 25) => {
+export const getCurrentSeasonAnimes = async (page = 1, limit = 25, canAccessAdultContent = false) => {
   try {
     const response = await axiosInstance.get(`${API_BASE_URL}/seasons/now`, {
       params: { 
         page, 
         limit, 
-        sfw: true, 
+        sfw: !canAccessAdultContent, // false se pode acessar conteúdo adulto, true se não pode
         filter: 'tv' 
       }
     });
@@ -190,13 +190,13 @@ export const getCurrentSeasonAnimes = async (page = 1, limit = 25) => {
   }
 };
 
-export const getTopRatedAnimes = async (page = 1, limit = 25) => {
+export const getTopRatedAnimes = async (page = 1, limit = 25, canAccessAdultContent = false) => {
   try {
     const response = await axiosInstance.get(`${API_BASE_URL}/top/anime`, {
       params: { 
         page, 
         limit, 
-        sfw: true, 
+        sfw: !canAccessAdultContent, // false se pode acessar conteúdo adulto, true se não pode
         type: 'tv' 
       }
     });
@@ -230,11 +230,11 @@ export const getAnimeGenres = async () => {
   }
 };
 
-export const getAnimes = async (page = 1, limit = 25, genreId = null) => {
+export const getAnimes = async (page = 1, limit = 25, genreId = null, canAccessAdultContent = false) => {
   const params = {
     page,
     limit,
-    sfw: true,
+    sfw: !canAccessAdultContent, // false se pode acessar conteúdo adulto, true se não pode
     type: 'tv',
     order_by: 'popularity',
     sort: 'desc'

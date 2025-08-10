@@ -1,46 +1,13 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
-
-export const languages = {
-  pt: 'Português',
-  en: 'English',
-};
-
-const DICTS = {
-  pt: {
-    'Explorar': 'Explorar',
-    'Minhas Listas': 'Minhas Listas',
-    'Meus Avaliados': 'Meus Avaliados',
-    'Planejo Assistir': 'Planejo Assistir',
-    'Assistindo Atualmente': 'Assistindo Atualmente',
-    'Completos': 'Completos',
-    'Desistidos': 'Desistidos',
-  },
-  en: {
-    'Explorar': 'Explore',
-    'Minhas Listas': 'My Lists',
-    'Meus Avaliados': 'My Ratings',
-    'Planejo Assistir': 'Plan to Watch',
-    'Assistindo Atualmente': 'Watching',
-    'Completos': 'Completed',
-    'Desistidos': 'Dropped',
-  },
-};
-
-const LanguageContext = createContext({
-  language: 'pt',
-  setLanguage: () => {},
-  translate: (key) => key,
-  t: (key) => key,
-});
+import React, { useMemo, useState } from 'react';
+import { DICTS } from './languageConstants';
+import { createTranslateFunction } from './languageUtils';
+import { LanguageContext } from './languageContext';
 
 export const LanguageProvider = ({ children }) => {
   const [language, setLanguage] = useState('pt');
 
   const translate = useMemo(() => {
-    return (key) => {
-      const dict = DICTS[language] || {};
-      return dict[key] || key;
-    };
+    return createTranslateFunction(language, DICTS);
   }, [language]);
 
   const value = useMemo(() => ({
@@ -55,7 +22,6 @@ export const LanguageProvider = ({ children }) => {
   );
 };
 
-export const useLanguage = () => useContext(LanguageContext);
 
 export default LanguageContext;
 

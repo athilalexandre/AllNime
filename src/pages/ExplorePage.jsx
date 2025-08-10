@@ -1,9 +1,10 @@
 // src/pages/ExplorePage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Star, TrendingUp, Sparkles, Eye } from 'lucide-react';
 import { getAnimeGenres, getAnimes, getTopRatedAnimes } from '../services/jikanService';
 import SearchBar from '../components/features/search/SearchBar';
+import { useAuth } from '../components/contexts/useAuth';
 
 const ExplorePage = () => {
   const [genres, setGenres] = useState([]);
@@ -14,17 +15,18 @@ const ExplorePage = () => {
   const [isLoadingGenres, setIsLoadingGenres] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { canAccessAdultContent } = useAuth();
 
   useEffect(() => {
     loadGenres();
     loadTopAnimes();
-  }, []);
+  }, [loadTopAnimes]);
 
   useEffect(() => {
     if (selectedGenre) {
       loadAnimesByGenre(selectedGenre);
     }
-  }, [selectedGenre]);
+  }, [selectedGenre, loadAnimesByGenre]);
 
   const loadGenres = async () => {
     setIsLoadingGenres(true);
@@ -39,22 +41,22 @@ const ExplorePage = () => {
     }
   };
 
-  const loadTopAnimes = async () => {
+  const loadTopAnimes = useCallback(async () => {
     try {
-      const response = await getTopRatedAnimes(1, 10);
+      const response = await getTopRatedAnimes(1, 10, canAccessAdultContent);
       if (response?.data) {
         setTopAnimes(response.data);
       }
     } catch (error) {
       console.error('Erro ao carregar top animes:', error);
     }
-  };
+  }, [canAccessAdultContent]);
 
-  const loadAnimesByGenre = async (genreId) => {
+  const loadAnimesByGenre = useCallback(async (genreId) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await getAnimes(1, 20, genreId);
+      const response = await getAnimes(1, 20, genreId, canAccessAdultContent);
       if (response?.data) {
         setAnimesByGenre(response.data);
       } else {
@@ -66,14 +68,14 @@ const ExplorePage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [canAccessAdultContent]);
 
   const handleGenreClick = (genre) => {
     setSelectedGenre(genre.mal_id);
   };
 
   const handleAnimeClick = (anime) => {
-    navigate(`/anime/${anime.mal_id}/edit`);
+    navigate(`/anime/${anime.mal_id}`);
   };
 
   const getGenreIcon = (genreName) => {

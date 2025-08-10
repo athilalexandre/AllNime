@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import AnimeDetailPage from './pages/AnimeDetailPage';
+import EditAnimePage from './pages/EditAnimePage';
 import Header from './components/layout/Header';
 import MyRatingsPage from './pages/MyRatingsPage';
 import PlanToWatchPage from './pages/PlanToWatchPage';
@@ -23,6 +24,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/anime/:id" element={<AnimeDetailPage />} />
+            <Route path="/anime/:id/edit" element={<EditAnimePage />} />
             <Route path="/my-ratings" element={<MyRatingsPage />} />
             <Route path="/plan-to-watch" element={<PlanToWatchPage />} />
             <Route path="/watching" element={<WatchingPage />} />

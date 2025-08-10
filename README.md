@@ -84,7 +84,7 @@
 git clone https://github.com/athilalexandre/allnime.git
 
 # Entre no diretório
-cd anime-master
+cd allnime
 
 # Instale as dependências
 npm install
@@ -161,7 +161,7 @@ src/
 ### 🤝 Contribuindo
 
 1. **Fork** o projeto
-2. **Clone** seu fork: `git clone https://github.com/seu-usuario/anime-master.git`
+2. **Clone** seu fork: `git clone https://github.com/seu-usuario/allnime.git`
 3. **Crie** uma branch: `git checkout -b feature/nova-funcionalidade`
 4. **Commit** suas mudanças: `git commit -m 'Adiciona nova funcionalidade'`
 5. **Push** para a branch: `git push origin feature/nova-funcionalidade`
@@ -322,7 +322,7 @@ src/
 ### 🤝 Contributing
 
 1. **Fork** the project
-2. **Clone** your fork: `git clone https://github.com/your-username/anime-master.git`
+2. **Clone** your fork: `git clone https://github.com/your-username/allnime.git`
 3. **Create** a branch: `git checkout -b feature/new-feature`
 4. **Commit** your changes: `git commit -m 'Add new feature'`
 5. **Push** to the branch: `git push origin feature/new-feature`
@@ -336,9 +336,9 @@ This project is under the MIT license. See the [LICENSE](LICENSE) file for more 
 
 ## 🌟 Status do Projeto / Project Status
 
-[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen)](https://github.com/athilalexandre/anime-master)
-[![Code Quality](https://img.shields.io/badge/Code%20Quality-A%2B-00ff00)](https://github.com/athilalexandre/anime-master)
-[![Last Commit](https://img.shields.io/badge/Last%20Commit-Active-brightgreen)](https://github.com/athilalexandre/anime-master)
+[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen)](https://github.com/athilalexandre/allnime)
+[![Code Quality](https://img.shields.io/badge/Code%20Quality-A%2B-00ff00)](https://github.com/athilalexandre/allnime)
+[![Last Commit](https://img.shields.io/badge/Last%20Commit-Active-brightgreen)](https://github.com/athilalexandre/allnime)
 
 ---
 

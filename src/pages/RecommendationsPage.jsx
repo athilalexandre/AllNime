@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, Star, RefreshCw } from 'lucide-react';
 import { recommendationService } from '../services/recommendationService.js';
-import { useLanguage } from '../components/contexts/LanguageContext.jsx';
+import { useLanguage } from '../components/contexts/useLanguage';
 import SkeletonCard from '../components/common/SkeletonCard';
 
 const RecommendationsPage = () => {

@@ -8,18 +8,20 @@ import 'swiper/css/navigation';
 import 'swiper/css/autoplay';
 import { getCurrentSeasonAnimes } from '../../../services/jikanService';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/useAuth';
 
 const SeasonalAnimeBlock = () => {
   const [animes, setAnimes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { canAccessAdultContent } = useAuth();
 
   useEffect(() => {
     const fetchAnimes = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const seasonAnimes = await getCurrentSeasonAnimes(1, 10);
+        const seasonAnimes = await getCurrentSeasonAnimes(1, 10, canAccessAdultContent);
         setAnimes(seasonAnimes.data || []);
       } catch (err) {
         console.error('Erro ao buscar animes da temporada:', err);
@@ -30,7 +32,7 @@ const SeasonalAnimeBlock = () => {
       }
     };
     fetchAnimes();
-  }, []);
+  }, [canAccessAdultContent]);
 
   if (error) {
     return <div className="text-center text-red-500 dark:text-red-400 col-span-full">{error}</div>;

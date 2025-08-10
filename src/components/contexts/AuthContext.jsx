@@ -1,13 +1,7 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged } from '../../services/auth/firebase';
-
-const AuthContext = createContext({
-  user: null,
-  loading: true,
-  signInWithGoogle: async () => {},
-  // twitter removed
-  logout: async () => {},
-});
+import { checkUserAge, canUserAccessAdultContent } from './authUtils';
+import { AuthContext } from './authContext';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -29,11 +23,28 @@ export const AuthProvider = ({ children }) => {
     await signOut(auth);
   };
 
-  const value = useMemo(() => ({ user, loading, signInWithGoogle, logout }), [user, loading]);
+  // Verifica se o usuário pode acessar conteúdo adulto
+  const canAccessAdultContent = useMemo(() => {
+    return canUserAccessAdultContent(user);
+  }, [user]);
+
+  // Verifica se o usuário é adulto
+  const isUserAdult = useMemo(() => {
+    return checkUserAge(user);
+  }, [user]);
+
+  const value = useMemo(() => ({ 
+    user, 
+    loading, 
+    signInWithGoogle, 
+    logout, 
+    canAccessAdultContent, 
+    isUserAdult 
+  }), [user, loading, canAccessAdultContent, isUserAdult]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => useContext(AuthContext);
+
 
 

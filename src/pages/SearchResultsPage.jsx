@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Search, Filter, ChevronLeft, ChevronRight, Star, Eye } from 'lucide-react';
 import { searchAnimes, searchAnimesAdvanced } from '../services/jikanService';
 import AdvancedSearchForm from '../components/features/search/AdvancedSearchForm';
+import { useAuth } from '../components/contexts/useAuth';
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -19,6 +20,7 @@ const SearchResultsPage = () => {
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [activeFilters, setActiveFilters] = useState({});
   const navigate = useNavigate();
+  const { canAccessAdultContent } = useAuth();
 
   useEffect(() => {
     if (!searchTerm.trim()) return;
@@ -38,13 +40,13 @@ const SearchResultsPage = () => {
           query,
           page: options.page || 1,
           ...activeFilters
-        });
+        }, canAccessAdultContent);
       } else {
         // Busca simples
         response = await searchAnimes(query, {
           page: options.page || 1,
           ...options
-        });
+        }, canAccessAdultContent);
       }
       
       if (response?.data) {
@@ -67,7 +69,7 @@ const SearchResultsPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [activeFilters]);
+  }, [activeFilters, canAccessAdultContent]);
 
   const handleAdvancedSearch = (filters) => {
     setActiveFilters(filters);

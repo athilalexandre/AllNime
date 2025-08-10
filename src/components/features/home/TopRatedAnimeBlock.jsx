@@ -8,18 +8,20 @@ import 'swiper/css/navigation';
 import 'swiper/css/autoplay';
 import { getTopRatedAnimes } from '../../../services/jikanService';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/useAuth';
 
 const TopRatedAnimeBlock = () => {
   const [animes, setAnimes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { canAccessAdultContent } = useAuth();
 
   useEffect(() => {
     const fetchAnimes = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const topAnimes = await getTopRatedAnimes(1, 10);
+        const topAnimes = await getTopRatedAnimes(1, 10, canAccessAdultContent);
         setAnimes(topAnimes.data || []);
       } catch (err) {
         console.error('Erro ao buscar animes mais bem avaliados:', err);
@@ -30,7 +32,7 @@ const TopRatedAnimeBlock = () => {
       }
     };
     fetchAnimes();
-  }, []);
+  }, [canAccessAdultContent]);
 
   if (error) {
     return <div className="text-center text-red-500 dark:text-red-400 col-span-full">{error}</div>;

@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X, TrendingUp, Clock, Star } from 'lucide-react';
 import { searchAnimes } from '../../../services/jikanService';
+import { useAuth } from '../../contexts/useAuth';
 
 const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "" }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,6 +18,7 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
   const searchTimeoutRef = useRef(null);
   const searchRef = useRef(null);
   const navigate = useNavigate();
+  const { canAccessAdultContent } = useAuth();
 
   useEffect(() => {
     // Carregar buscas recentes do localStorage
@@ -45,7 +47,7 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [searchTerm]);
+  }, [searchTerm, fetchSuggestions]);
 
   useEffect(() => {
     // Fechar sugestões ao clicar fora
@@ -59,12 +61,12 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchSuggestions = async (query) => {
+  const fetchSuggestions = useCallback(async (query) => {
     if (query.trim().length < 2) return;
 
     setIsLoading(true);
     try {
-      const response = await searchAnimes(query, { limit: 5 });
+      const response = await searchAnimes(query, { limit: 5 }, canAccessAdultContent);
       if (response?.data) {
         setSuggestions(response.data);
         setShowSuggestions(true);
@@ -74,7 +76,7 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [canAccessAdultContent]);
 
   const handleSearch = (query) => {
     if (!query.trim()) return;
