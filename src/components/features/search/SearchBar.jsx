@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, X, TrendingUp, Clock, Star } from 'lucide-react';
 import { searchAnimes } from '../../../services/jikanService';
 import { useAuth } from '../../contexts/AuthContext';
+import logger from '../../../services/loggerService.js';
 
 const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "" }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,10 +21,58 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
   const navigate = useNavigate();
   const { canAccessAdultContent } = useAuth();
 
+  // Log component initialization
+  useEffect(() => {
+    logger.info('SearchBar component initialized', {
+      canAccessAdultContent,
+      popularSearchesCount: popularSearches.length
+    }, 'search');
+  }, [canAccessAdultContent]);
+
+  // Mover fetchSuggestions para antes do useEffect que a utiliza
+  const fetchSuggestions = useCallback(async (query) => {
+    if (query.trim().length < 2) return;
+
+    logger.debug('Fetching suggestions', { query, canAccessAdultContent }, 'search');
+    setIsLoading(true);
+    
+    try {
+      const startTime = Date.now();
+      const response = await searchAnimes(query, { limit: 5 }, canAccessAdultContent);
+      const duration = Date.now() - startTime;
+      
+      if (response?.data) {
+        setSuggestions(response.data);
+        setShowSuggestions(true);
+        logger.info('Suggestions fetched successfully', {
+          query,
+          resultsCount: response.data.length,
+          duration: `${duration}ms`
+        }, 'search');
+      } else {
+        logger.warn('No suggestions data in response', { query, response }, 'search');
+      }
+    } catch (error) {
+      logger.error('Error fetching suggestions', {
+        query,
+        error: error.message,
+        stack: error.stack
+      }, 'search');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [canAccessAdultContent]);
+
   useEffect(() => {
     // Carregar buscas recentes do localStorage
-    const recent = JSON.parse(localStorage.getItem('recentSearches') || '[]');
-    setRecentSearches(recent.slice(0, 5));
+    try {
+      const recent = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+      setRecentSearches(recent.slice(0, 5));
+      logger.debug('Recent searches loaded', { count: recent.length }, 'search');
+    } catch (error) {
+      logger.error('Error loading recent searches from localStorage', { error: error.message }, 'search');
+      setRecentSearches([]);
+    }
   }, []);
 
   useEffect(() => {
@@ -37,6 +86,7 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
       searchTimeoutRef.current = setTimeout(() => {
         fetchSuggestions(searchTerm);
       }, 300);
+      logger.debug('Search debounce started', { searchTerm, delay: 300 }, 'search');
     } else {
       setSuggestions([]);
       setShowSuggestions(false);
@@ -61,30 +111,20 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchSuggestions = useCallback(async (query) => {
-    if (query.trim().length < 2) return;
-
-    setIsLoading(true);
-    try {
-      const response = await searchAnimes(query, { limit: 5 }, canAccessAdultContent);
-      if (response?.data) {
-        setSuggestions(response.data);
-        setShowSuggestions(true);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar sugestões:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [canAccessAdultContent]);
-
   const handleSearch = (query) => {
     if (!query.trim()) return;
     
+    logger.info('Search initiated', { query, source: 'searchbar' }, 'search');
+    
     // Salvar busca recente
-    const newRecent = [query, ...recentSearches.filter(s => s !== query)].slice(0, 5);
-    setRecentSearches(newRecent);
-    localStorage.setItem('recentSearches', JSON.stringify(newRecent));
+    try {
+      const newRecent = [query, ...recentSearches.filter(s => s !== query)].slice(0, 5);
+      setRecentSearches(newRecent);
+      localStorage.setItem('recentSearches', JSON.stringify(newRecent));
+      logger.debug('Recent search saved', { query, totalRecent: newRecent.length }, 'search');
+    } catch (error) {
+      logger.error('Error saving recent search', { query, error: error.message }, 'search');
+    }
     
     // Navegar para resultados
     navigate(`/search?q=${encodeURIComponent(query.trim())}`);
@@ -98,20 +138,27 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
   };
 
   const clearSearch = () => {
+    logger.debug('Search cleared', { previousTerm: searchTerm }, 'search');
     setSearchTerm('');
     setSuggestions([]);
     setShowSuggestions(false);
   };
 
   const handleSuggestionClick = (anime) => {
+    logger.info('Suggestion clicked', { 
+      animeTitle: anime.title, 
+      animeId: anime.mal_id 
+    }, 'search');
     handleSearch(anime.title);
   };
 
   const handleRecentSearchClick = (search) => {
+    logger.info('Recent search clicked', { search }, 'search');
     handleSearch(search);
   };
 
   const handlePopularSearchClick = (search) => {
+    logger.info('Popular search clicked', { search }, 'search');
     handleSearch(search);
   };
 
@@ -128,6 +175,11 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
             onFocus={() => {
               if (searchTerm.trim().length >= 2 || recentSearches.length > 0 || popularSearches.length > 0) {
                 setShowSuggestions(true);
+                logger.debug('Search suggestions shown on focus', { 
+                  searchTermLength: searchTerm.trim().length,
+                  recentSearchesCount: recentSearches.length,
+                  popularSearchesCount: popularSearches.length
+                }, 'search');
               }
             }}
           />
@@ -159,40 +211,43 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
           {/* Sugestões da API */}
           {suggestions.length > 0 && (
             <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-                <Search size={16} />
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                <Star className="w-4 h-4 mr-2 text-yellow-500" />
                 Sugestões
               </h3>
               <div className="space-y-2">
-                {suggestions.map(anime => (
+                {suggestions.map((anime) => (
                   <button
                     key={anime.mal_id}
                     onClick={() => handleSuggestionClick(anime)}
-                    className="w-full text-left p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors flex items-center gap-3"
+                    className="w-full text-left p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
                   >
-                    <img
-                      src={anime.images?.jpg?.image_url}
-                      alt={anime.title}
-                      className="w-10 h-14 object-cover rounded"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://via.placeholder.com/40x56?text=No+Image';
-                      }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                        {anime.title}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {anime.type} • {anime.episodes || '?'} eps
-                      </p>
-                    </div>
-                    {anime.score && (
-                      <div className="flex items-center gap-1 text-yellow-500">
-                        <Star size={14} fill="currentColor" />
-                        <span className="text-xs font-medium">{anime.score}</span>
+                    <div className="flex items-center space-x-3">
+                      {anime.images?.jpg?.image_url && (
+                        <img
+                          src={anime.images.jpg.image_url}
+                          alt={anime.title}
+                          className="w-10 h-14 object-cover rounded flex-shrink-0"
+                          onError={(e) => {
+                            logger.warn('Failed to load anime image', { 
+                              animeId: anime.mal_id, 
+                              imageUrl: anime.images?.jpg?.image_url 
+                            }, 'search');
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {anime.title}
+                        </div>
+                        {anime.year && (
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {anime.year}
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </button>
                 ))}
               </div>
@@ -202,16 +257,16 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
           {/* Buscas recentes */}
           {recentSearches.length > 0 && (
             <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-                <Clock size={16} />
-                Buscas recentes
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                <Clock className="w-4 h-4 mr-2 text-blue-500" />
+                Buscas Recentes
               </h3>
               <div className="space-y-1">
                 {recentSearches.map((search, index) => (
                   <button
                     key={index}
                     onClick={() => handleRecentSearchClick(search)}
-                    className="w-full text-left p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors text-sm text-gray-700 dark:text-gray-300"
+                    className="w-full text-left p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors text-sm text-gray-600 dark:text-gray-400"
                   >
                     {search}
                   </button>
@@ -221,29 +276,32 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
           )}
 
           {/* Buscas populares */}
-          <div className="p-3">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-              <TrendingUp size={16} />
-              Buscas populares
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {popularSearches.map((search, index) => (
-                <button
-                  key={index}
-                  onClick={() => handlePopularSearchClick(search)}
-                  className="px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full text-xs text-gray-700 dark:text-gray-300 transition-colors"
-                >
-                  {search}
-                </button>
-              ))}
+          {popularSearches.length > 0 && (
+            <div className="p-3">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
+                Populares
+              </h3>
+              <div className="space-y-1">
+                {popularSearches.map((search, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handlePopularSearchClick(search)}
+                    className="w-full text-left p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors text-sm text-gray-600 dark:text-gray-400"
+                  >
+                    {search}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Loading */}
+          {/* Loading state */}
           {isLoading && (
             <div className="p-3 text-center">
-              <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-primary-light"></div>
-              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">Buscando...</span>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                Buscando sugestões...
+              </div>
             </div>
           )}
         </div>

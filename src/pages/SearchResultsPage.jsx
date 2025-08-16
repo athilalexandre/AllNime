@@ -1,289 +1,189 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, Filter, ChevronLeft, ChevronRight, Star, Eye } from 'lucide-react';
-import { searchAnimes, searchAnimesAdvanced } from '../services/jikanService';
-import AdvancedSearchForm from '../components/features/search/AdvancedSearchForm';
-import { useAuth } from '../components/contexts/AuthContext';
-import AdultContentWarning from '../components/ui/AdultContentWarning';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
+import { searchAnimes } from '../services/jikanService';
 import { useAdultContent } from '../hooks/useAdultContent';
-
-function useQuery() {
-  return new URLSearchParams(useLocation().search);
-}
+import AnimeCard from '../components/common/AnimeCard';
+import { Search, Filter, Grid, List, Star, Calendar, TrendingUp } from 'lucide-react';
 
 const SearchResultsPage = () => {
-  const query = useQuery();
-  const searchTerm = query.get('q') || '';
-  const [results, setResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [animes, setAnimes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
-  const [activeFilters, setActiveFilters] = useState({});
-  const navigate = useNavigate();
-  const { canAccessAdultContent } = useAuth();
+  const [viewMode, setViewMode] = useState('grid');
+  const [sortBy, setSortBy] = useState('relevance');
   const { canAccess } = useAdultContent();
 
-  useEffect(() => {
-    if (!searchTerm.trim()) return;
-    performSearch(searchTerm, { page: 1 });
-  }, [searchTerm, performSearch]);
+  const query = searchParams.get('q') || '';
 
-  const performSearch = useCallback(async (query, options = {}) => {
-    setIsLoading(true);
+  useEffect(() => {
+    if (query) {
+      performSearch();
+    }
+  }, [query, sortBy]);
+
+  const performSearch = async () => {
+    setLoading(true);
     setError(null);
     
     try {
-      let response;
-      
-      if (Object.keys(activeFilters).length > 0) {
-        // Busca avançada
-        response = await searchAnimesAdvanced({
-          query,
-          page: options.page || 1,
-          ...activeFilters
-        }, canAccessAdultContent);
-      } else {
-        // Busca simples
-        response = await searchAnimes(query, {
-          page: options.page || 1,
-          ...options
-        }, canAccessAdultContent);
-      }
+      const response = await searchAnimes(query, { 
+        limit: 50,
+        sort: sortBy === 'score' ? 'desc' : 'asc',
+        orderBy: sortBy === 'score' ? 'score' : 'title'
+      }, canAccess());
       
       if (response?.data) {
-        const filteredResults = response.data.filter(anime =>
-          anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url
-        );
-        setResults(filteredResults);
-        
-        // Configurar paginação
-        if (response.pagination) {
-          setTotalPages(Math.ceil(response.pagination.items.total / 25));
-        }
+        setAnimes(response.data);
       } else {
-        setResults([]);
-        setTotalPages(1);
+        setAnimes([]);
       }
     } catch (error) {
-      setError('Erro ao buscar animes.');
       console.error('Erro na busca:', error);
+      setError('Erro ao realizar a busca. Tente novamente.');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  }, [activeFilters, canAccessAdultContent]);
-
-  const handleAdvancedSearch = (filters) => {
-    setActiveFilters(filters);
-    setCurrentPage(1);
-    performSearch(searchTerm, { page: 1, ...filters });
-    setShowAdvancedSearch(false);
   };
 
-  const handlePageChange = (newPage) => {
-    if (newPage < 1 || newPage > totalPages) return;
-    
-    setCurrentPage(newPage);
-    performSearch(searchTerm, { page: newPage, ...activeFilters });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const getSortLabel = (value) => {
+    switch (value) {
+      case 'relevance': return 'Relevância';
+      case 'title': return 'Título A-Z';
+      case 'score': return 'Melhor Avaliados';
+      default: return 'Relevância';
+    }
   };
 
-  const clearFilters = () => {
-    setActiveFilters({});
-    setCurrentPage(1);
-    performSearch(searchTerm, { page: 1 });
-  };
-
-  const hasActiveFilters = Object.keys(activeFilters).length > 0;
-
-  return (
-    <div className="container mx-auto p-4 pt-20">
-      {/* Header da busca */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Resultados para "{searchTerm}"</h1>
-        
-        {/* Filtros ativos */}
-        {hasActiveFilters && (
-          <div className="flex items-center gap-2 mb-4 flex-wrap">
-            <span className="text-sm text-gray-600 dark:text-gray-400">Filtros ativos:</span>
-            {Object.entries(activeFilters).map(([key, value]) => (
-              <span
-                key={key}
-                className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary-light text-white"
-              >
-                {key}: {value}
-              </span>
-            ))}
-            <button
-              onClick={clearFilters}
-              className="text-sm text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-            >
-              Limpar filtros
-            </button>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-light"></div>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">Buscando animes...</p>
           </div>
-        )}
-
-        {/* Controles de busca */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <button
-            onClick={() => setShowAdvancedSearch(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
-          >
-            <Filter size={18} />
-            Busca Avançada
-          </button>
-          
-          {hasActiveFilters && (
-            <button
-              onClick={clearFilters}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              Limpar Filtros
-            </button>
-          )}
         </div>
       </div>
+    );
+  }
 
-      {/* Aviso de Conteúdo Adulto */}
-      {!canAccess() && (
-        <div className="mb-6">
-          <AdultContentWarning
-            title="Conteúdo Adulto Filtrado"
-            message="Os resultados da busca foram filtrados para excluir conteúdo adulto. Faça login e verifique se você é maior de 18 anos para acessar todos os resultados."
-            showDetails={true}
-            onAction={() => window.location.href = '/'}
-            actionText="Fazer Login"
-          />
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center space-x-2 mb-4">
+            <Search className="w-6 h-6 text-primary-light" />
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Resultados da Busca
+            </h1>
+          </div>
+          
+          {query && (
+            <p className="text-lg text-gray-600 dark:text-gray-400">
+              Buscando por: <span className="font-semibold text-primary-light">"{query}"</span>
+            </p>
+          )}
+          
+          {animes.length > 0 && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+              {animes.length} anime{animes.length !== 1 ? 's' : ''} encontrado{animes.length !== 1 ? 's' : ''}
+            </p>
+          )}
         </div>
-      )}
 
-      {/* Loading e erro */}
-      {isLoading && (
-        <div className="text-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-light"></div>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Buscando animes...</p>
-        </div>
-      )}
-
-      {error && (
-        <div className="text-center py-8">
-          <p className="text-red-500 text-lg">{error}</p>
-          <button
-            onClick={() => performSearch(searchTerm, { page: currentPage, ...activeFilters })}
-            className="mt-2 px-4 py-2 bg-primary-light text-white rounded-lg hover:bg-primary-dark transition-colors"
-          >
-            Tentar novamente
-          </button>
-        </div>
-      )}
-
-      {/* Resultados */}
-      {!isLoading && !error && results.length === 0 && (
-        <div className="text-center py-8">
-          <Search size={48} className="mx-auto text-gray-400 mb-4" />
-          <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">Nenhum anime encontrado.</p>
-          <p className="text-sm text-gray-500 dark:text-gray-500">
-            Tente ajustar os termos de busca ou usar a busca avançada.
-          </p>
-        </div>
-      )}
-
-      {/* Grid de resultados */}
-      {!isLoading && !error && results.length > 0 && (
-        <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
-            {results.map(anime => (
-              <div
-                key={anime.mal_id}
-                className="bg-card-light dark:bg-card-dark rounded-lg shadow-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform group"
-                onClick={() => navigate(`/anime/${anime.mal_id}/edit`)}
-              >
-                <div className="relative">
-                  <img 
-                    src={anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url} 
-                    alt={anime.title} 
-                    className="w-full h-64 object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://via.placeholder.com/250x350?text=No+Image';
-                    }}
-                  />
-                  
-                  {/* Overlay com informações */}
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center">
-                    <div className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-center">
-                      <Eye size={24} className="mx-auto mb-2" />
-                      <span className="text-sm">Ver detalhes</span>
-                    </div>
-                  </div>
-
-                  {/* Score */}
-                  {anime.score && (
-                    <div className="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                      <Star size={12} fill="currentColor" />
-                      {anime.score}
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-3">
-                  <h3 className="text-md font-semibold truncate mb-1" title={anime.title}>
-                    {anime.title}
-                  </h3>
-                  
-                  <div className="space-y-1 text-xs text-text-muted-light dark:text-text-muted-dark">
-                    {anime.type && (
-                      <p className="capitalize">{anime.type}</p>
-                    )}
-                    {anime.episodes && (
-                      <p>Episódios: {anime.episodes}</p>
-                    )}
-                    {anime.status && (
-                      <p className="capitalize">{anime.status}</p>
-                    )}
-                    {anime.year && (
-                      <p>{anime.year}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+        {/* Controls */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+          {/* Sort Options */}
+          <div className="flex items-center space-x-2">
+            <Filter className="w-4 h-4 text-gray-500" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+            >
+              <option value="relevance">Relevância</option>
+              <option value="title">Título A-Z</option>
+              <option value="score">Melhor Avaliados</option>
+            </select>
           </div>
 
-          {/* Paginação */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mb-8">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <ChevronLeft size={18} />
-              </button>
-              
-              <span className="px-4 py-2 text-gray-700 dark:text-gray-300">
-                Página {currentPage} de {totalPages}
-              </span>
-              
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <ChevronRight size={18} />
-              </button>
-            </div>
-          )}
-        </>
-      )}
+          {/* View Mode Toggle */}
+          <div className="flex bg-white dark:bg-gray-800 rounded-lg p-1 shadow-sm">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-md transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-primary-light text-white'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              <Grid size={20} />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-md transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-primary-light text-white'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              <List size={20} />
+            </button>
+          </div>
+        </div>
 
-      {/* Modal de busca avançada */}
-      <AdvancedSearchForm
-        isOpen={showAdvancedSearch}
-        onClose={() => setShowAdvancedSearch(false)}
-        onSearch={handleAdvancedSearch}
-      />
+        {/* Results */}
+        {error ? (
+          <div className="text-center py-12">
+            <div className="text-red-500 mb-4">
+              <Search className="w-16 h-16 mx-auto" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Erro na busca
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+            <button
+              onClick={performSearch}
+              className="px-4 py-2 bg-primary-light hover:bg-primary-dark text-white rounded-md transition-colors"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        ) : animes.length > 0 ? (
+          <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' : 'space-y-4'}>
+            {animes.map((anime) => (
+              <AnimeCard
+                key={anime.mal_id}
+                anime={anime}
+                viewMode={viewMode}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Nenhum anime encontrado
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Não encontramos animes para "{query}". Tente:
+            </p>
+            <ul className="text-sm text-gray-500 dark:text-gray-400 space-y-1 mb-6">
+              <li>• Verificar a ortografia</li>
+              <li>• Usar termos mais gerais</li>
+              <li>• Tentar sinônimos</li>
+            </ul>
+            <Link
+              to="/explore"
+              className="inline-flex items-center px-4 py-2 bg-primary-light hover:bg-primary-dark text-white rounded-md transition-colors"
+            >
+              Explorar Animes
+            </Link>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

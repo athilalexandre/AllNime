@@ -5,7 +5,6 @@ import SearchBar from '../components/features/search/SearchBar';
 import MyTopRatedAnimeBlock from '../components/features/home/MyTopRatedAnimeBlock';
 import SeasonalAnimeBlock from '../components/features/home/SeasonalAnimeBlock';
 import TopRatedAnimeBlock from '../components/features/home/TopRatedAnimeBlock';
-import AdultContentWarning from '../components/ui/AdultContentWarning';
 import { useAdultContent } from '../hooks/useAdultContent';
 
 const HomePage = () => {
@@ -32,21 +31,6 @@ const HomePage = () => {
           </div>
         </div>
       </div>
-
-      {/* Aviso de Conteúdo Adulto */}
-      {!canAccess() && (
-        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <AdultContentWarning
-              title="Conteúdo Adulto Filtrado"
-              message="Os animes exibidos foram filtrados para excluir conteúdo adulto. Faça login e verifique se você é maior de 18 anos para acessar todos os animes."
-              showDetails={true}
-              onAction={() => window.location.href = '/'}
-              actionText="Fazer Login"
-            />
-          </div>
-        </div>
-      )}
 
       {/* Features Grid */}
       <div className="px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -98,13 +82,13 @@ const HomePage = () => {
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
             Comece sua jornada hoje
           </h2>
-          <p className="max-w-2xl mx-auto mt-4 text-lg text-gray-600 dark:text-gray-300">
-            Explore milhares de animes, crie suas listas personalizadas e descubra novos favoritos.
+          <p className="max-w-2xl mx-auto mt-4 text-lg text-gray-600 dark:text-gray-400">
+            Junte-se à comunidade AllNime e descubra um mundo de animes incríveis.
           </p>
           <div className="mt-8">
             <Link
               to="/explore"
-              className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-primary-light hover:bg-primary-dark rounded-md transition-colors"
             >
               Explorar Animes
             </Link>
