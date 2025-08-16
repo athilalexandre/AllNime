@@ -1,7 +1,7 @@
 // src/pages/ExplorePage.jsx
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getTopAnimes, getSeasonalAnimes, getUpcomingAnimes } from '../services/jikanService';
+import { getTopRatedAnimes, getCurrentSeasonAnimes, getAnimes } from '../services/jikanService';
 import { useAdultContent } from '../hooks/useAdultContent';
 import AnimeCard from '../components/common/AnimeCard';
 import { Filter, Grid, List, Search, TrendingUp, Calendar, Star } from 'lucide-react';
@@ -15,9 +15,24 @@ const ExplorePage = () => {
   const { canAccess } = useAdultContent();
 
   const tabs = [
-    { id: 'top', label: 'Top Animes', icon: <Star size={16} />, fetchFunction: getTopAnimes },
-    { id: 'seasonal', label: 'Animes da Temporada', icon: <Calendar size={16} />, fetchFunction: getSeasonalAnimes },
-    { id: 'upcoming', label: 'Próximos Animes', icon: <TrendingUp size={16} />, fetchFunction: getUpcomingAnimes },
+    { 
+      id: 'top', 
+      label: 'Top Animes', 
+      icon: <Star size={16} />, 
+      fetchFunction: (canAccess) => getTopRatedAnimes(1, 50, canAccess)
+    },
+    { 
+      id: 'seasonal', 
+      label: 'Animes da Temporada', 
+      icon: <Calendar size={16} />, 
+      fetchFunction: (canAccess) => getCurrentSeasonAnimes(1, 50, canAccess)
+    },
+    { 
+      id: 'popular', 
+      label: 'Animes Populares', 
+      icon: <TrendingUp size={16} />, 
+      fetchFunction: (canAccess) => getAnimes(1, 50, null, canAccess)
+    },
   ];
 
   useEffect(() => {
@@ -26,7 +41,7 @@ const ExplorePage = () => {
       try {
         const activeTabData = tabs.find(tab => tab.id === activeTab);
         if (activeTabData) {
-          const response = await activeTabData.fetchFunction({ limit: 50 }, canAccess());
+          const response = await activeTabData.fetchFunction(canAccess());
           if (response?.data) {
             setAnimes(response.data);
           }
@@ -134,8 +149,8 @@ const ExplorePage = () => {
 
         {/* Empty State */}
         {animes.length === 0 && !loading && (
-          <div className="text-center py-12">
-            <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <div className="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
+            <Search className="w-16 h-16 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Nenhum anime encontrado
             </h3>
