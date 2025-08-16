@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Debug - AllNime</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .danger {
+            background: #dc3545;
+        }
+        .danger:hover {
+            background: #c82333;
+        }
+        .success {
+            background: #28a745;
+        }
+        .success:hover {
+            background: #218838;
+        }
+        .warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .warning:hover {
+            background: #e0a800;
+        }
+        .log-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .status.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste de Debug - AllNime</h1>
+        <p>Esta página testa o sistema de logging e debug implementado no projeto.</p>
+
+        <div class="test-section">
+            <h3>📊 Status do Sistema</h3>
+            <div id="system-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Testes de Logging</h3>
+            <button onclick="testBasicLogging()">Testar Logs Básicos</button>
+            <button onclick="testErrorLogging()">Testar Logs de Erro</button>
+            <button onclick="testPerformanceLogging()">Testar Logs de Performance</button>
+            <button onclick="testAPILogging()">Testar Logs de API</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🚨 Testes de Erro</h3>
+            <button onclick="testUnhandledError()" class="danger">Erro Não Tratado</button>
+            <button onclick="testPromiseRejection()" class="danger">Rejeição de Promise</button>
+            <button onclick="testFirebaseError()" class="danger">Erro Firebase</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📈 Estatísticas e Controles</h3>
+            <button onclick="showLogStats()">Mostrar Estatísticas</button>
+            <button onclick="clearLogs()" class="warning">Limpar Logs</button>
+            <button onclick="exportLogs()" class="success">Exportar Logs</button>
+            <button onclick="changeLogLevel()">Mudar Nível de Log</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🌐 Testes de API</h3>
+            <button onclick="testJikanAPI()">Testar Jikan API</button>
+            <button onclick="testConsumetAPI()">Testar Consumet API</button>
+            <button onclick="testRateLimiting()">Testar Rate Limiting</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📝 Saída dos Logs</h3>
+            <div id="log-output" class="log-output">
+                <p>Os logs aparecerão aqui...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simular o sistema de logging do AllNime
+        class MockLogger {
+            constructor() {
+                this.logs = [];
+                this.apiCallCounts = {};
+                this.currentLevel = 'INFO';
+                this.maxLogs = 1000;
+            }
+
+            log(level, message, data = null, context = '') {
+                const logEntry = {
+                    level: level,
+                    message: message,
+                    data: data,
+                    context: context,
+                    timestamp: new Date().toISOString(),
+                    url: window.location.href
+                };
+
+                this.logs.push(logEntry);
+                
+                if (this.logs.length > this.maxLogs) {
+                    this.logs = this.logs.slice(-this.maxLogs);
+                }
+
+                // Console output
+                const prefix = `[${level.toUpperCase()}] [${new Date().toLocaleTimeString()}]`;
+                if (data) {
+                    console.log(`${prefix} ${message}`, data);
+                } else {
+                    console.log(`${prefix} ${message}`);
+                }
+
+                // Update UI
+                this.updateLogOutput(logEntry);
+            }
+
+            info(message, data = null, context = '') {
+                this.log('info', message, data, context);
+            }
+
+            warn(message, data = null, context = '') {
+                this.log('warn', message, data, context);
+            }
+
+            error(message, data = null, context = '') {
+                this.log('error', message, data, context);
+            }
+
+            critical(message, data = null, context = '') {
+                this.log('critical', message, data, context);
+            }
+
+            debug(message, data = null, context = '') {
+                this.log('debug', message, data, context);
+            }
+
+            logFirebaseError(error, context = '') {
+                this.error('Firebase Error', {
+                    code: error.code || 'unknown',
+                    message: error.message,
+                    stack: error.stack,
+                    context: context
+                }, 'firebase');
+            }
+
+            logAPICall(url, status, duration, result, error = null) {
+                const apiName = this.getAPIName(url);
+                
+                if (!this.apiCallCounts[apiName]) {
+                    this.apiCallCounts[apiName] = {
+                        calls: 0,
+                        lastReset: Date.now(),
+                        errors: 0,
+                        totalDuration: 0
+                    };
+                }
+
+                const apiStats = this.apiCallCounts[apiName];
+                apiStats.calls++;
+                apiStats.totalDuration += duration;
+
+                if (result === 'error') {
+                    apiStats.errors++;
+                }
+
+                this.debug(`API Call: ${apiName}`, {
+                    url: url,
+                    status: status,
+                    duration: `${duration}ms`,
+                    result: result,
+                    totalCalls: apiStats.calls,
+                    errors: apiStats.errors,
+                    avgDuration: Math.round(apiStats.totalDuration / apiStats.calls)
+                }, 'api');
+            }
+
+            getAPIName(url) {
+                if (typeof url === 'string') {
+                    if (url.includes('api.jikan.moe')) return 'jikan';
+                    if (url.includes('consumet')) return 'consumet';
+                    if (url.includes('firebase')) return 'firebase';
+                    if (url.includes('googleapis')) return 'firebase';
+                }
+                return 'unknown';
+            }
+
+            logPerformance(operation, duration, details = {}) {
+                if (duration > 1000) {
+                    this.warn(`Slow Operation: ${operation}`, {
+                        duration: `${duration}ms`,
+                        threshold: '1000ms',
+                        details: details
+                    }, 'performance');
+                }
+
+                this.debug(`Performance: ${operation}`, {
+                    duration: `${duration}ms`,
+                    details: details
+                }, 'performance');
+            }
+
+            getLogs(level = null, limit = 100) {
+                let filteredLogs = this.logs;
+                
+                if (level) {
+                    filteredLogs = this.logs.filter(log => log.level === level);
+                }
+                
+                return filteredLogs.slice(-limit);
+            }
+
+            getAPIStats() {
+                return this.apiCallCounts;
+            }
+
+            clearLogs() {
+                this.logs = [];
+                this.apiCallCounts = {};
+                this.info('Logs cleared');
+                this.updateLogOutput();
+            }
+
+            exportLogs() {
+                const exportData = {
+                    logs: this.logs,
+                    apiStats: this.apiCallCounts,
+                    exportDate: new Date().toISOString(),
+                    version: '1.0.0'
+                };
+
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `allnime-logs-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                this.info('Logs exported successfully');
+            }
+
+            setLogLevel(level) {
+                this.currentLevel = level;
+                this.info(`Log level changed to: ${level}`);
+            }
+
+            updateLogOutput(logEntry = null) {
+                const output = document.getElementById('log-output');
+                
+                if (logEntry) {
+                    // Add new log entry
+                    const logDiv = document.createElement('div');
+                    logDiv.innerHTML = `
+                        <div style="margin-bottom: 10px; padding: 5px; border-left: 3px solid ${this.getLevelColor(logEntry.level)}; padding-left: 10px;">
+                            <strong>[${logEntry.level.toUpperCase()}]</strong> ${logEntry.message}
+                            <br><small style="color: #666;">${new Date(logEntry.timestamp).toLocaleTimeString()}</small>
+                            ${logEntry.context ? `<br><small style="color: #888;">Context: ${logEntry.context}</small>` : ''}
+                            ${logEntry.data ? `<br><details><summary>Data</summary><pre style="font-size: 10px; margin-top: 5px;">${JSON.stringify(logEntry.data, null, 2)}</pre></details>` : ''}
+                        </div>
+                    `;
+                    output.appendChild(logDiv);
+                } else {
+                    // Clear output
+                    output.innerHTML = '<p>Logs cleared...</p>';
+                }
+
+                // Auto-scroll to bottom
+                output.scrollTop = output.scrollHeight;
+            }
+
+            getLevelColor(level) {
+                switch (level) {
+                    case 'debug': return '#3b82f6';
+                    case 'info': return '#10b981';
+                    case 'warn': return '#f59e0b';
+                    case 'error': return '#ef4444';
+                    case 'critical': return '#dc2626';
+                    default: return '#6b7280';
+                }
+            }
+        }
+
+        // Initialize logger
+        const logger = new MockLogger();
+
+        // Test functions
+        function testBasicLogging() {
+            logger.info('Teste de log básico', { test: true, timestamp: Date.now() });
+            logger.debug('Log de debug para desenvolvimento');
+            logger.warn('Aviso sobre possível problema');
+            logger.error('Erro simulado para teste');
+            logger.critical('Erro crítico simulado');
+        }
+
+        function testErrorLogging() {
+            try {
+                throw new Error('Erro simulado para teste de logging');
+            } catch (error) {
+                logger.error('Erro capturado', {
+                    message: error.message,
+                    stack: error.stack
+                });
+            }
+        }
+
+        function testPerformanceLogging() {
+            const startTime = Date.now();
+            
+            // Simulate some work
+            setTimeout(() => {
+                const duration = Date.now() - startTime;
+                logger.logPerformance('Operação Simulada', duration, {
+                    operation: 'test',
+                    simulated: true
+                });
+            }, 1500); // 1.5 seconds to trigger warning
+        }
+
+        function testAPILogging() {
+            // Simulate API calls
+            logger.logAPICall('https://api.jikan.moe/v4/anime', 200, 150, 'success');
+            logger.logAPICall('https://api.jikan.moe/v4/anime', 200, 200, 'success');
+            logger.logAPICall('https://consumet-api.vercel.app/anime/gogoanime/watch', 200, 300, 'success');
+            logger.logAPICall('https://api.jikan.moe/v4/anime', 429, 100, 'error', new Error('Rate limit exceeded'));
+        }
+
+        function testUnhandledError() {
+            // This will trigger the global error handler
+            setTimeout(() => {
+                throw new Error('Erro não tratado simulado');
+            }, 100);
+        }
+
+        function testPromiseRejection() {
+            // This will trigger the unhandledrejection handler
+            setTimeout(() => {
+                Promise.reject(new Error('Promise rejeitada simulado'));
+            }, 100);
+        }
+
+        function testFirebaseError() {
+            const firebaseError = new Error('Firebase configuration error');
+            firebaseError.code = 'auth/invalid-api-key';
+            logger.logFirebaseError(firebaseError, 'test');
+        }
+
+        function showLogStats() {
+            const logs = logger.getLogs();
+            const apiStats = logger.getAPIStats();
+            
+            const statsDiv = document.getElementById('system-status');
+            statsDiv.innerHTML = `
+                <div class="status success">
+                    <strong>Estatísticas dos Logs:</strong><br>
+                    Total de logs: ${logs.length}<br>
+                    Logs por nível: ${Object.entries(logs.reduce((acc, log) => {
+                        acc[log.level] = (acc[log.level] || 0) + 1;
+                        return acc;
+                    }, {})).map(([level, count]) => `${level}: ${count}`).join(', ')}
+                </div>
+                <div class="status warning">
+                    <strong>Estatísticas de API:</strong><br>
+                    ${Object.entries(apiStats).map(([api, stats]) => 
+                        `${api}: ${stats.calls} chamadas, ${stats.errors} erros`
+                    ).join('<br>') || 'Nenhuma chamada de API registrada'}
+                </div>
+            `;
+        }
+
+        function clearLogs() {
+            logger.clearLogs();
+        }
+
+        function exportLogs() {
+            logger.exportLogs();
+        }
+
+        function changeLogLevel() {
+            const levels = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'];
+            const currentIndex = levels.indexOf(logger.currentLevel);
+            const nextLevel = levels[(currentIndex + 1) % levels.length];
+            logger.setLogLevel(nextLevel);
+            
+            const statusDiv = document.getElementById('system-status');
+            statusDiv.innerHTML = `<div class="status success">Nível de log alterado para: ${nextLevel}</div>`;
+        }
+
+        function testJikanAPI() {
+            // Simulate Jikan API call
+            logger.info('Iniciando teste da Jikan API');
+            
+            fetch('https://api.jikan.moe/v4/anime/1')
+                .then(response => {
+                    const duration = Math.random() * 500 + 100; // Random duration between 100-600ms
+                    logger.logAPICall('https://api.jikan.moe/v4/anime/1', response.status, duration, 'success');
+                    return response.json();
+                })
+                .then(data => {
+                    logger.info('Jikan API test successful', { animeId: 1, title: data.data?.title });
+                })
+                .catch(error => {
+                    logger.error('Jikan API test failed', { error: error.message });
+                });
+        }
+
+        function testConsumetAPI() {
+            // Simulate Consumet API call
+            logger.info('Iniciando teste da Consumet API');
+            
+            const duration = Math.random() * 800 + 200; // Random duration between 200-1000ms
+            logger.logAPICall('https://consumet-api.vercel.app/anime/gogoanime/watch', 200, duration, 'success');
+            logger.info('Consumet API test completed (simulated)');
+        }
+
+        function testRateLimiting() {
+            // Simulate multiple API calls to test rate limiting
+            logger.info('Testando rate limiting com múltiplas chamadas');
+            
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const duration = Math.random() * 300 + 100;
+                    logger.logAPICall('https://api.jikan.moe/v4/anime', 200, duration, 'success');
+                }, i * 100);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            logger.info('Página de teste de debug carregada', {
+                url: window.location.href,
+                userAgent: navigator.userAgent,
+                timestamp: new Date().toISOString()
+            });
+
+            showLogStats();
+        });
+
+        // Global error handlers
+        window.addEventListener('error', function(event) {
+            logger.error('Global JavaScript Error', {
+                message: event.message,
+                filename: event.filename,
+                lineno: event.lineno,
+                colno: event.colno
+            });
+        });
+
+        window.addEventListener('unhandledrejection', function(event) {
+            logger.error('Unhandled Promise Rejection', {
+                reason: event.reason,
+                promise: event.promise
+            });
+            event.preventDefault();
+        });
+    </script>
+</body>
+</html>
