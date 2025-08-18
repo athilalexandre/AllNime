@@ -4,7 +4,7 @@ import logger from './loggerService.js';
 const API_BASE_URL = 'https://api.jikan.moe/v4';
 
 // Soft rate limiting: aim ~1 request/second
-const MIN_REQUEST_INTERVAL_MS = 900;
+const MIN_REQUEST_INTERVAL_MS = 1200; // Increased to be more conservative
 let lastRequestAt = 0;
 
 // localStorage keys for persistent cache
@@ -17,8 +17,8 @@ const STORAGE_KEYS = {
 const cache = {
   data: new Map(),
   timestamps: new Map(),
-  maxAge: 5 * 60 * 1000, // 5 minutes
-  maxSize: 100
+  maxAge: 10 * 60 * 1000, // 10 minutes (increased)
+  maxSize: 200 // Increased cache size
 };
 
 // Rate limiting state
@@ -142,10 +142,13 @@ const makeRequest = async (url, params = {}) => {
     // Return cached data if available, even if expired
     const expiredData = cache.data.get(cacheKey);
     if (expiredData) {
+      logger.info('Returning expired cached data due to rate limit', { url }, 'api');
       return expiredData;
     }
     
-    throw new Error(`Rate limited. Try again in ${waitTime} seconds.`);
+    // If no cached data, try to return a default response structure
+    logger.warn('No cached data available, returning empty response', { url }, 'api');
+    return { data: [], pagination: { has_next_page: false } };
   }
   
   try {
@@ -177,17 +180,12 @@ const makeRequest = async (url, params = {}) => {
         return cachedData;
       }
 
-      // One quick retry after a short backoff (max 3s)
-      const quickBackoffMs = Math.min((retryAfter || 1) * 1000, 3000);
-      await new Promise(r => setTimeout(r, quickBackoffMs));
-      try {
-        const retryResponse = await axiosInstance.get(url, { params });
-        lastRequestAt = Date.now();
-        setCache(cacheKey, retryResponse.data);
-        return retryResponse.data;
-      } catch (retryErr) {
-        throw retryErr;
-      }
+      // If no cached data, return empty response instead of throwing
+      logger.warn('Jikan API Rate Limited - No cached data, returning empty response', {
+        url,
+        retryAfter
+      }, 'api');
+      return { data: [], pagination: { has_next_page: false } };
     }
     
     throw error;
@@ -443,6 +441,11 @@ export const getAnimeDetailsById = async (id) => {
         error: fallbackError.message,
         status: fallbackError.response?.status
       }, 'api');
+      
+      // Se for rate limit, retornar erro específico
+      if (fallbackError.message.includes('Rate limited')) {
+        throw new Error(`API temporariamente indisponível. Tente novamente em alguns minutos.`);
+      }
       
       if (fallbackError.response?.status === 404) {
         throw new Error(`Anime com ID ${id} não foi encontrado na base de dados.`);

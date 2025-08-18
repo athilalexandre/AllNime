@@ -29,6 +29,14 @@ const DICTS = {
     'Meus Animes Favoritos': 'Meus Animes Favoritos',
     'animes encontrados': 'animes encontrados',
     'animes avaliados': 'animes avaliados',
+    'Descubra Animes': 'Descubra Animes',
+    'Encontre novos animes através de nossa busca avançada e recomendações personalizadas.': 'Encontre novos animes através de nossa busca avançada e recomendações personalizadas.',
+    'Organize sua Lista': 'Organize sua Lista',
+    'Mantenha controle dos animes que está assistindo, planeja assistir ou já completou.': 'Mantenha controle dos animes que está assistindo, planeja assistir ou já completou.',
+    'Avalie e Comente': 'Avalie e Comente',
+    'Compartilhe suas opiniões e veja o que outros usuários pensam sobre os animes.': 'Compartilhe suas opiniões e veja o que outros usuários pensam sobre os animes.',
+    'Comece sua jornada hoje': 'Comece sua jornada hoje',
+    'Junte-se à comunidade AllNime e descubra um mundo de animes incríveis.': 'Junte-se à comunidade AllNime e descubra um mundo de animes incríveis.',
     
     // Explore Page
     'Explorar Animes': 'Explorar Animes',
@@ -53,6 +61,7 @@ const DICTS = {
     
     // Common
     'Carregando...': 'Carregando...',
+    'Carregando animes...': 'Carregando animes...',
     'Erro': 'Erro',
     'Sucesso': 'Sucesso',
     'Salvar': 'Salvar',
@@ -61,6 +70,11 @@ const DICTS = {
     'Excluir': 'Excluir',
     'Filtrar': 'Filtrar',
     'Limpar': 'Limpar',
+    'Este anime não foi encontrado na base de dados.': 'Este anime não foi encontrado na base de dados.',
+    'Não foi possível carregar os detalhes do anime.': 'Não foi possível carregar os detalhes do anime.',
+    'API temporariamente indisponível. Tente novamente em alguns minutos.': 'API temporariamente indisponível. Tente novamente em alguns minutos.',
+    'Página não encontrada.': 'Página não encontrada.',
+    'Voltar para a Home': 'Voltar para a Home',
     
     // Anime details
     'Avaliação': 'Avaliação',
@@ -124,6 +138,14 @@ const DICTS = {
     'Meus Animes Favoritos': 'My Favorite Animes',
     'animes encontrados': 'animes found',
     'animes avaliados': 'animes rated',
+    'Descubra Animes': 'Discover Animes',
+    'Encontre novos animes através de nossa busca avançada e recomendações personalizadas.': 'Find new animes through our advanced search and personalized recommendations.',
+    'Organize sua Lista': 'Organize your List',
+    'Mantenha controle dos animes que está assistindo, planeja assistir ou já completou.': 'Keep track of the animes you are watching, plan to watch, or have already completed.',
+    'Avalie e Comente': 'Rate and Comment',
+    'Compartilhe suas opiniões e veja o que outros usuários pensam sobre os animes.': 'Share your opinions and see what other users think about animes.',
+    'Comece sua jornada hoje': 'Start your journey today',
+    'Junte-se à comunidade AllNime e descubra um mundo de animes incríveis.': 'Join the AllNime community and discover a world of amazing animes.',
     
     // Explore Page
     'Explorar Animes': 'Explore Animes',
@@ -148,6 +170,7 @@ const DICTS = {
     
     // Common
     'Carregando...': 'Loading...',
+    'Carregando animes...': 'Loading animes...',
     'Erro': 'Error',
     'Sucesso': 'Success',
     'Salvar': 'Save',
@@ -156,6 +179,11 @@ const DICTS = {
     'Excluir': 'Delete',
     'Filtrar': 'Filter',
     'Limpar': 'Clear',
+    'Este anime não foi encontrado na base de dados.': 'This anime was not found in the database.',
+    'Não foi possível carregar os detalhes do anime.': 'Could not load anime details.',
+    'API temporariamente indisponível. Tente novamente em alguns minutos.': 'API temporarily unavailable. Try again in a few minutes.',
+    'Página não encontrada.': 'Page not found.',
+    'Voltar para a Home': 'Back to Home',
     
     // Anime details
     'Avaliação': 'Rating',

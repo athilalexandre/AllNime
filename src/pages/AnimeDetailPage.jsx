@@ -5,10 +5,11 @@ import { useParams, Link } from 'react-router-dom';
 import { getAnimeDetailsById } from '../services/jikanService';
 import { getAnimeWatchInfo } from '../services/consumetService';
 import { Star, Share2 } from 'lucide-react'; // Ícone de estrela e compartilhamento
+import { useLanguage } from '../components/contexts/LanguageContext';
+import { getEnglishTitle, localizeAnimeFields, translateTextSafe } from '../services/translationService';
 import WatchlistControls from '../components/features/anime-detail/WatchlistControls'; // Adicionar import
 import ShareControls from '../components/features/sharing/ShareControls';
 import SharePreviewModal from '../components/features/sharing/SharePreviewModal';
-import { useLanguage } from '../components/contexts/LanguageContext';
 import { useShareReviewImage } from '../hooks/useShareReviewImage';
 import { useTheme } from '../hooks/useTheme';
 import AdultContentWarning from '../components/ui/AdultContentWarning';
@@ -31,7 +32,7 @@ const AnimeDetailPage = () => {
   // Hook para tema
   const { theme } = useTheme();
   
-  const { translate } = useLanguage(); // Usar o hook de linguagem
+  const { translate, language } = useLanguage(); // Usar o hook de linguagem
   const { canAccess, checkAccessWithNotification } = useAdultContent();
 
   useEffect(() => {
@@ -48,7 +49,14 @@ const AnimeDetailPage = () => {
         console.log('✅ Resposta da Jikan API:', detailsResponse);
         
         if (detailsResponse?.data) {
-          setAnime(detailsResponse.data);
+          // Localize fields when in PT, and prefer English title for EN
+          const base = detailsResponse.data;
+          const localized = localizeAnimeFields(base, language);
+          // Best-effort translate synopsis to PT only, keep EN as original
+          if (language === 'pt' && localized?.synopsis) {
+            localized.synopsis = await translateTextSafe(localized.synopsis, 'pt');
+          }
+          setAnime(localized);
           console.log('🎯 Anime definido no estado:', detailsResponse.data.title);
 
           // Buscar informações de streaming com base no título
@@ -88,6 +96,8 @@ const AnimeDetailPage = () => {
         // Verificar se é um erro de ID não encontrado
         if (err.message.includes('não foi encontrado') || err.message.includes('não existe')) {
           setError(translate('Este anime não foi encontrado na base de dados.'));
+        } else if (err.message.includes('API temporariamente indisponível')) {
+          setError(translate('API temporariamente indisponível. Tente novamente em alguns minutos.'));
         } else {
           setError(translate('Não foi possível carregar os detalhes do anime.'));
         }
@@ -100,7 +110,7 @@ const AnimeDetailPage = () => {
     if (id) {
       fetchDetails();
     }
-  }, [id, translate]); // Adicionar translate às dependências
+  }, [id, translate, language]); // Adicionar translate às dependências
 
   const handleSaveRating = () => {
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -215,7 +225,7 @@ const AnimeDetailPage = () => {
 
 
   const displayImage = anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || '';
-  const displayTitle = anime.title || 'N/A';
+  const displayTitle = language === 'en' ? getEnglishTitle(anime) || anime.title || 'N/A' : (anime.title || getEnglishTitle(anime) || 'N/A');
   const displayJapaneseTitle = anime.title_japanese || 'N/A';
   const cleanSynopsis = anime.synopsis ? anime.synopsis.replace(/<[^>]*>?/gm, '') : 'N/A';
   const displaySynopsis = cleanSynopsis.replace(/\n/g, '\n\n');
