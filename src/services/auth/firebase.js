@@ -1,6 +1,7 @@
 // Firebase initialization and providers
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { getAnalytics } from 'firebase/analytics';
 import logger, { logFirebaseError } from '../loggerService.js';
 
 // Firebase configuration validation
@@ -48,21 +49,27 @@ const getFirebaseConfig = () => {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
     projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
     appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || '',
   };
 
-  // If environment variables are not set, use development fallback
+  // If environment variables are not set, use the provided configuration
   if (!config.apiKey || config.apiKey === '') {
-    logger.warn('Firebase environment variables not found, using development fallback', {
+    logger.warn('Firebase environment variables not found, using provided configuration', {
       environment: import.meta.env.MODE,
-      suggestion: 'Create a .env file with your Firebase configuration'
+      suggestion: 'Create a .env file with your Firebase configuration for better security'
     }, 'firebase');
     
     config = {
-      apiKey: "AIzaSyBXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-      authDomain: "allnime-app.firebaseapp.com",
-      projectId: "allnime-app",
-      appId: "1:123456789:web:abcdef123456"
+      apiKey: "AIzaSyBt8_qHTUMU3YKNqLBi93vaOX9SWFce60A",
+      authDomain: "allnime-auth.firebaseapp.com",
+      projectId: "allnime-auth",
+      storageBucket: "allnime-auth.firebasestorage.app",
+      messagingSenderId: "546097675788",
+      appId: "1:546097675788:web:61493ab2ca24a4abcab829",
+      measurementId: "G-1RMZZNVTV9"
     };
   } else {
     logger.info('Firebase environment variables loaded successfully', {
@@ -78,6 +85,7 @@ const getFirebaseConfig = () => {
     hasAuthDomain: !!config.authDomain,
     hasProjectId: !!config.projectId,
     hasAppId: !!config.appId,
+    hasAnalytics: !!config.measurementId,
     environment: import.meta.env.MODE,
     usingFallback: !import.meta.env.VITE_FIREBASE_API_KEY
   }, 'firebase');
@@ -89,6 +97,7 @@ const getFirebaseConfig = () => {
 let app;
 let auth;
 let googleProvider;
+let analytics;
 
 try {
   const firebaseConfig = getFirebaseConfig();
@@ -107,6 +116,20 @@ try {
   logger.info('Firebase App initialized successfully', {
     projectId: firebaseConfig.projectId
   }, 'firebase');
+
+  // Initialize Analytics (only in production)
+  if (import.meta.env.PROD && firebaseConfig.measurementId) {
+    try {
+      analytics = getAnalytics(app);
+      logger.info('Firebase Analytics initialized successfully', {
+        measurementId: firebaseConfig.measurementId
+      }, 'firebase');
+    } catch (analyticsError) {
+      logger.warn('Failed to initialize Analytics', {
+        error: analyticsError.message
+      }, 'firebase');
+    }
+  }
 
   // Initialize Auth
   auth = getAuth(app);
@@ -140,6 +163,7 @@ try {
   app = null;
   auth = null;
   googleProvider = null;
+  analytics = null;
 }
 
 // Check if Firebase is properly initialized
@@ -343,6 +367,7 @@ const checkFirebaseHealth = () => {
 export {
   auth,
   googleProvider,
+  analytics,
   enhancedSignInWithPopup as signInWithPopup,
   enhancedSignOut as signOut,
   enhancedOnAuthStateChanged as onAuthStateChanged,
