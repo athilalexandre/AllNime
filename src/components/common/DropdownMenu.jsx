@@ -49,7 +49,7 @@ const DropdownMenu = ({ label, items }) => {
                 // Adicionado w-full e text-left para consistência se o botão fosse um <button>
                 role="menuitem"
               >
-                {item.icon && <item.icon size={16} className="mr-2 flex-shrink-0" />} {/* Adicionado flex-shrink-0 */}
+                {item.icon && React.createElement(item.icon, { size: 16, className: "mr-2 flex-shrink-0" })}
                 <span className="truncate">{item.label}</span> {/* Adicionado truncate */}
               </Link>
             ))}

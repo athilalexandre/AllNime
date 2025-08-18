@@ -3,6 +3,16 @@ import logger from './loggerService.js';
 
 const API_BASE_URL = 'https://api.jikan.moe/v4';
 
+// Soft rate limiting: aim ~1 request/second
+const MIN_REQUEST_INTERVAL_MS = 900;
+let lastRequestAt = 0;
+
+// localStorage keys for persistent cache
+const STORAGE_KEYS = {
+  cacheData: 'jikan_cache_data',
+  cacheTimes: 'jikan_cache_times',
+};
+
 // Cache system for rate limiting
 const cache = {
   data: new Map(),
@@ -36,6 +46,32 @@ const getFromCache = (key) => {
   return null;
 };
 
+const saveCacheToStorage = () => {
+  try {
+    const dataEntries = Array.from(cache.data.entries());
+    const timeEntries = Array.from(cache.timestamps.entries());
+    localStorage.setItem(STORAGE_KEYS.cacheData, JSON.stringify(dataEntries));
+    localStorage.setItem(STORAGE_KEYS.cacheTimes, JSON.stringify(timeEntries));
+  } catch (_) {
+    // ignore persistence errors (e.g., SSR or quota)
+  }
+};
+
+const loadCacheFromStorage = () => {
+  try {
+    const rawData = localStorage.getItem(STORAGE_KEYS.cacheData);
+    const rawTimes = localStorage.getItem(STORAGE_KEYS.cacheTimes);
+    if (rawData && rawTimes) {
+      const parsedData = JSON.parse(rawData);
+      const parsedTimes = JSON.parse(rawTimes);
+      cache.data = new Map(parsedData);
+      cache.timestamps = new Map(parsedTimes);
+    }
+  } catch (_) {
+    // ignore
+  }
+};
+
 const setCache = (key, data) => {
   // Clean old entries if cache is full
   if (cache.data.size >= cache.maxSize) {
@@ -46,11 +82,17 @@ const setCache = (key, data) => {
   
   cache.data.set(key, data);
   cache.timestamps.set(key, Date.now());
+  // Persist lazily
+  saveCacheToStorage();
 };
 
 const clearCache = () => {
   cache.data.clear();
   cache.timestamps.clear();
+  try {
+    localStorage.removeItem(STORAGE_KEYS.cacheData);
+    localStorage.removeItem(STORAGE_KEYS.cacheTimes);
+  } catch (_) {}
 };
 
 // Rate limiting functions
@@ -107,7 +149,14 @@ const makeRequest = async (url, params = {}) => {
   }
   
   try {
+    // Soft client-side pacing
+    const elapsed = Date.now() - lastRequestAt;
+    if (elapsed < MIN_REQUEST_INTERVAL_MS) {
+      await new Promise(r => setTimeout(r, MIN_REQUEST_INTERVAL_MS - elapsed));
+    }
+
     const response = await axiosInstance.get(url, { params });
+    lastRequestAt = Date.now();
     
     // Cache successful response
     setCache(cacheKey, response.data);
@@ -126,6 +175,18 @@ const makeRequest = async (url, params = {}) => {
           retryAfter
         }, 'api');
         return cachedData;
+      }
+
+      // One quick retry after a short backoff (max 3s)
+      const quickBackoffMs = Math.min((retryAfter || 1) * 1000, 3000);
+      await new Promise(r => setTimeout(r, quickBackoffMs));
+      try {
+        const retryResponse = await axiosInstance.get(url, { params });
+        lastRequestAt = Date.now();
+        setCache(cacheKey, retryResponse.data);
+        return retryResponse.data;
+      } catch (retryErr) {
+        throw retryErr;
       }
     }
     
@@ -416,7 +477,6 @@ export const getAnimeGenres = async () => {
 
 export const getAnimes = async (page = 1, limit = 25, genreId = null, canAccessAdultContent = false) => {
   const params = {
-    sfw: !canAccessAdultContent,
     page,
     limit,
     type: 'tv',

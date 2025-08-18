@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { getTopRatedAnimes, getCurrentSeasonAnimes, getAnimes } from '../services/jikanService';
 import { useAdultContent } from '../hooks/useAdultContent';
+import { useLanguage } from '../components/contexts/LanguageContext';
 import AnimeCard from '../components/common/AnimeCard';
 import { Filter, Grid, List, Search, TrendingUp, Calendar, Star } from 'lucide-react';
 
@@ -13,25 +14,26 @@ const ExplorePage = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [activeTab, setActiveTab] = useState('top');
   const { canAccess } = useAdultContent();
+  const { translate } = useLanguage();
 
   const tabs = [
     { 
       id: 'top', 
-      label: 'Top Animes', 
+      label: translate('Top Animes'), 
       icon: <Star size={16} />, 
-      fetchFunction: (canAccess) => getTopRatedAnimes(1, 50, canAccess)
+      fetchFunction: (canAccess) => getTopRatedAnimes(1, 20, canAccess)
     },
     { 
       id: 'seasonal', 
-      label: 'Animes da Temporada', 
+      label: translate('Animes da Temporada'), 
       icon: <Calendar size={16} />, 
-      fetchFunction: (canAccess) => getCurrentSeasonAnimes(1, 50, canAccess)
+      fetchFunction: (canAccess) => getCurrentSeasonAnimes(1, 20, canAccess)
     },
     { 
       id: 'popular', 
-      label: 'Animes Populares', 
+      label: translate('Animes Populares'), 
       icon: <TrendingUp size={16} />, 
-      fetchFunction: (canAccess) => getAnimes(1, 50, null, canAccess)
+      fetchFunction: (canAccess) => getAnimes(1, 20, null, canAccess)
     },
   ];
 
@@ -72,7 +74,7 @@ const ExplorePage = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-light"></div>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">Carregando animes...</p>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">{translate('Carregando...')}</p>
           </div>
         </div>
       </div>
@@ -85,10 +87,10 @@ const ExplorePage = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Explorar Animes
+            {translate('Explorar Animes')}
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Descubra novos animes através de nossas categorias curadas e recomendações personalizadas.
+            {translate('Descubra novos animes através de nossas categorias curadas e recomendações personalizadas.')}
           </p>
         </div>
 
@@ -152,10 +154,10 @@ const ExplorePage = () => {
           <div className="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
             <Search className="w-16 h-16 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              Nenhum anime encontrado
+              {translate('Nenhum anime encontrado')}
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              Tente ajustar os filtros ou explore outras categorias.
+              {translate('Tente ajustar os filtros ou explore outras categorias.')}
             </p>
           </div>
         )}

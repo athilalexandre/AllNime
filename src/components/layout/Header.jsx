@@ -3,25 +3,24 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import ThemeToggle from '../common/ThemeToggle';
 import DropdownMenu from '../common/DropdownMenu';
-import DebugPanel from '../ui/DebugPanel';
+
 import AgeRestrictionIcon from '../ui/AgeRestrictionIcon';
 import SearchBar from '../features/search/SearchBar';
-import { Star, Eye, PlaySquare, CheckCheck, ArchiveX, Compass, Settings, Bug, Menu } from 'lucide-react';
+import { Star, Eye, PlaySquare, CheckCheck, ArchiveX, Compass, Settings, Menu } from 'lucide-react';
 import { useLanguage, languages } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 
 const Header = () => {
   const { translate, setLanguage, language } = useLanguage();
   const { user, loading, signInWithGoogle, logout } = useAuth();
-  const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const myListsItems = [
-    { label: translate('Assistindo'), icon: <PlaySquare size={16} />, to: '/watching' },
-    { label: translate('Completados'), icon: <CheckCheck size={16} />, to: '/completed' },
-    { label: translate('Planejados'), icon: <Eye size={16} />, to: '/plan-to-watch' },
-    { label: translate('Pausados'), icon: <Star size={16} />, to: '/on-hold' },
-    { label: translate('Desistidos'), icon: <ArchiveX size={16} />, to: '/dropped' },
+    { label: translate('Assistindo'), icon: PlaySquare, to: '/watching' },
+    { label: translate('Completados'), icon: CheckCheck, to: '/completed' },
+    { label: translate('Planejados'), icon: Eye, to: '/plan-to-watch' },
+    { label: translate('Pausados'), icon: Star, to: '/on-hold' },
+    { label: translate('Desistidos'), icon: ArchiveX, to: '/dropped' },
   ];
 
   return (
@@ -50,7 +49,7 @@ const Header = () => {
 
             {/* Search Bar - Centro */}
             <div className="hidden md:flex flex-1 max-w-md mx-2 lg:mx-4 justify-center">
-              <SearchBar placeholder="Digite o nome de um anime..." className="w-full max-w-sm" />
+              <SearchBar placeholder={translate('Digite o nome de um anime...')} className="w-full max-w-sm" />
             </div>
 
             {/* Right Side Elements */}
@@ -63,20 +62,11 @@ const Header = () => {
               {/* Botão de logout (apenas quando logado) */}
               {user && (
                 <button onClick={logout} className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors font-medium whitespace-nowrap">
-                  Sair
+                  {translate('Sair')}
                 </button>
               )}
               
-              {/* Debug Button - Only visible in development */}
-              {import.meta.env.DEV && (
-                <button
-                  onClick={() => setIsDebugPanelOpen(true)}
-                  className="p-1.5 text-yellow-600 hover:text-yellow-700 dark:text-yellow-400 dark:hover:text-yellow-300 transition-colors"
-                  title="Debug Panel"
-                >
-                  <Bug size={16} />
-                </button>
-              )}
+
               
               {/* Language Selection Buttons */}
               <div className="hidden sm:flex space-x-1">
@@ -109,7 +99,7 @@ const Header = () => {
           
           {/* Mobile Search Bar */}
           <div className="md:hidden mb-3 px-2">
-            <SearchBar placeholder="Digite o nome de um anime..." className="w-full" />
+            <SearchBar placeholder={translate('Digite o nome de um anime...')} className="w-full" />
           </div>
           
           {/* Mobile Menu */}
@@ -140,7 +130,7 @@ const Header = () => {
                           <img src={user.photoURL} alt={user.displayName || 'avatar'} className="w-8 h-8 rounded-full" />
                         )}
                         <span className="text-sm text-text-main-light dark:text-text-main-dark">
-                          {user.displayName || 'Usuário'}
+                          {user.displayName || translate('Usuário')}
                         </span>
                         <button 
                           onClick={() => {
@@ -149,7 +139,7 @@ const Header = () => {
                           }} 
                           className="ml-auto px-3 py-1.5 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
                         >
-                          Sair
+                          {translate('Sair')}
                         </button>
                       </div>
                     ) : (
@@ -160,7 +150,7 @@ const Header = () => {
                         }} 
                         className="w-full mx-3 px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
                       >
-                        Login Google
+                        {translate('Login Google')}
                       </button>
                     )}
                   </div>
@@ -196,11 +186,7 @@ const Header = () => {
         </div>
       </header>
       
-      {/* Debug Panel */}
-      <DebugPanel 
-        isOpen={isDebugPanelOpen} 
-        onClose={() => setIsDebugPanelOpen(false)} 
-      />
+
     </>
   );
 };

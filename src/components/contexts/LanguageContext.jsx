@@ -9,158 +9,194 @@ export const languages = {
 // Language dictionaries
 const DICTS = {
   pt: {
-    // Navigation
-    'nav.home': 'Início',
-    'nav.explore': 'Explorar',
-    'nav.myRatings': 'Minhas Avaliações',
-    'nav.settings': 'Configurações',
-    'nav.watching': 'Assistindo',
-    'nav.planToWatch': 'Planejo Assistir',
-    'nav.completed': 'Completos',
-    'nav.dropped': 'Desistidos',
+    // Header & Navigation
+    'Minhas Listas': 'Minhas Listas',
+    'Explorar': 'Explorar',
+    'Configurações': 'Configurações',
+    'Assistindo': 'Assistindo',
+    'Completados': 'Completados',
+    'Planejados': 'Planejados',
+    'Pausados': 'Pausados',
+    'Desistidos': 'Desistidos',
+    'Sair': 'Sair',
+    'Login Google': 'Login Google',
+    'Usuário': 'Usuário',
     
-    // Common
-    'common.loading': 'Carregando...',
-    'common.error': 'Erro',
-    'common.success': 'Sucesso',
-    'common.save': 'Salvar',
-    'common.cancel': 'Cancelar',
-    'common.edit': 'Editar',
-    'common.delete': 'Excluir',
-    'common.search': 'Buscar',
-    'common.filter': 'Filtrar',
-    'common.clear': 'Limpar',
+    // Home Page
+    'Descubra, organize e acompanhe seus animes favoritos. Uma plataforma completa para gerenciar sua jornada pelo mundo dos animes.': 'Descubra, organize e acompanhe seus animes favoritos. Uma plataforma completa para gerenciar sua jornada pelo mundo dos animes.',
+    'Animes da Temporada Atual': 'Animes da Temporada Atual',
+    'Animes Mais Bem Avaliados': 'Animes Mais Bem Avaliados',
+    'Meus Animes Favoritos': 'Meus Animes Favoritos',
+    'animes encontrados': 'animes encontrados',
+    'animes avaliados': 'animes avaliados',
+    
+    // Explore Page
+    'Explorar Animes': 'Explorar Animes',
+    'Descubra novos animes através de nossas categorias curadas e recomendações personalizadas.': 'Descubra novos animes através de nossas categorias curadas e recomendações personalizadas.',
+    'Top Animes': 'Top Animes',
+    'Animes da Temporada': 'Animes da Temporada',
+    'Animes Populares': 'Animes Populares',
+    'Nenhum anime encontrado': 'Nenhum anime encontrado',
+    'Tente ajustar os filtros ou explore outras categorias.': 'Tente ajustar os filtros ou explore outras categorias.',
     
     // Search
-    'search.placeholder': 'Buscar animes...',
-    'search.noResults': 'Nenhum resultado encontrado',
-    'search.advanced': 'Busca Avançada',
-    'search.filters': 'Filtros',
-    'search.genre': 'Gênero',
-    'search.type': 'Tipo',
-    'search.status': 'Status',
-    'search.score': 'Pontuação',
-    'search.year': 'Ano',
+    'Digite o nome de um anime...': 'Digite o nome de um anime...',
+    'Buscar': 'Buscar',
+    'Busca Avançada': 'Busca Avançada',
+    'Filtros': 'Filtros',
+    'Gênero': 'Gênero',
+    'Tipo': 'Tipo',
+    'Status': 'Status',
+    'Pontuação': 'Pontuação',
+    'Ano': 'Ano',
+    'Nenhum resultado encontrado': 'Nenhum resultado encontrado',
+    
+    // Common
+    'Carregando...': 'Carregando...',
+    'Erro': 'Erro',
+    'Sucesso': 'Sucesso',
+    'Salvar': 'Salvar',
+    'Cancelar': 'Cancelar',
+    'Editar': 'Editar',
+    'Excluir': 'Excluir',
+    'Filtrar': 'Filtrar',
+    'Limpar': 'Limpar',
     
     // Anime details
-    'anime.rating': 'Avaliação',
-    'anime.episodes': 'Episódios',
-    'anime.status': 'Status',
-    'anime.genres': 'Gêneros',
-    'anime.synopsis': 'Sinopse',
-    'anime.addToList': 'Adicionar à Lista',
-    'anime.removeFromList': 'Remover da Lista',
+    'Avaliação': 'Avaliação',
+    'Episódios': 'Episódios',
+    'Gêneros': 'Gêneros',
+    'Sinopse': 'Sinopse',
+    'Adicionar à Lista': 'Adicionar à Lista',
+    'Remover da Lista': 'Remover da Lista',
     
     // Lists
-    'list.watching': 'Assistindo',
-    'list.planToWatch': 'Planejo Assistir',
-    'list.completed': 'Completos',
-    'list.dropped': 'Desistidos',
-    'list.empty': 'Nenhum anime nesta lista',
+    'Nenhum anime nesta lista': 'Nenhum anime nesta lista',
     
     // Settings
-    'settings.general': 'Geral',
-    'settings.appearance': 'Aparência',
-    'settings.language': 'Idioma',
-    'settings.notifications': 'Notificações',
-    'settings.privacy': 'Privacidade',
-    'settings.data': 'Dados',
-    'settings.account': 'Conta',
-    'settings.theme': 'Tema',
-    'settings.light': 'Claro',
-    'settings.dark': 'Escuro',
-    'settings.auto': 'Automático',
+    'Geral': 'Geral',
+    'Aparência': 'Aparência',
+    'Idioma': 'Idioma',
+    'Notificações': 'Notificações',
+    'Privacidade': 'Privacidade',
+    'Dados': 'Dados',
+    'Conta': 'Conta',
+    'Tema': 'Tema',
+    'Claro': 'Claro',
+    'Escuro': 'Escuro',
+    'Automático': 'Automático',
     
     // Auth
-    'auth.login': 'Entrar',
-    'auth.logout': 'Sair',
-    'auth.loginWithGoogle': 'Entrar com Google',
-    'auth.userProfile': 'Perfil do Usuário',
-    'auth.ageVerification': 'Verificação de Idade',
-    'auth.adultContent': 'Conteúdo Adulto',
+    'Entrar': 'Entrar',
+    'Perfil do Usuário': 'Perfil do Usuário',
+    'Verificação de Idade': 'Verificação de Idade',
+    'Conteúdo Adulto': 'Conteúdo Adulto',
     
     // Notifications
-    'notification.success': 'Sucesso',
-    'notification.error': 'Erro',
-    'notification.warning': 'Aviso',
-    'notification.info': 'Informação',
+    'Aviso': 'Aviso',
+    'Informação': 'Informação',
+    
+    // Pages
+    'Início': 'Início',
+    'Minhas Avaliações': 'Minhas Avaliações',
+    'Planejo Assistir': 'Planejo Assistir',
+    'Completos': 'Completos',
+    'Desistidos': 'Desistidos',
   },
   en: {
-    // Navigation
-    'nav.home': 'Home',
-    'nav.explore': 'Explore',
-    'nav.myRatings': 'My Ratings',
-    'nav.settings': 'Settings',
-    'nav.watching': 'Watching',
-    'nav.planToWatch': 'Plan to Watch',
-    'nav.completed': 'Completed',
-    'nav.dropped': 'Dropped',
+    // Header & Navigation
+    'Minhas Listas': 'My Lists',
+    'Explorar': 'Explore',
+    'Configurações': 'Settings',
+    'Assistindo': 'Watching',
+    'Completados': 'Completed',
+    'Planejados': 'Planned',
+    'Pausados': 'On Hold',
+    'Desistidos': 'Dropped',
+    'Sair': 'Logout',
+    'Login Google': 'Google Login',
+    'Usuário': 'User',
     
-    // Common
-    'common.loading': 'Loading...',
-    'common.error': 'Error',
-    'common.success': 'Success',
-    'common.save': 'Save',
-    'common.cancel': 'Cancel',
-    'common.edit': 'Edit',
-    'common.delete': 'Delete',
-    'common.search': 'Search',
-    'common.filter': 'Filter',
-    'common.clear': 'Clear',
+    // Home Page
+    'Descubra, organize e acompanhe seus animes favoritos. Uma plataforma completa para gerenciar sua jornada pelo mundo dos animes.': 'Discover, organize and track your favorite animes. A complete platform to manage your journey through the anime world.',
+    'Animes da Temporada Atual': 'Current Season Animes',
+    'Animes Mais Bem Avaliados': 'Top Rated Animes',
+    'Meus Animes Favoritos': 'My Favorite Animes',
+    'animes encontrados': 'animes found',
+    'animes avaliados': 'animes rated',
+    
+    // Explore Page
+    'Explorar Animes': 'Explore Animes',
+    'Descubra novos animes através de nossas categorias curadas e recomendações personalizadas.': 'Discover new animes through our curated categories and personalized recommendations.',
+    'Top Animes': 'Top Animes',
+    'Animes da Temporada': 'Seasonal Animes',
+    'Animes Populares': 'Popular Animes',
+    'Nenhum anime encontrado': 'No anime found',
+    'Tente ajustar os filtros ou explore outras categorias.': 'Try adjusting the filters or explore other categories.',
     
     // Search
-    'search.placeholder': 'Search animes...',
-    'search.noResults': 'No results found',
-    'search.advanced': 'Advanced Search',
-    'search.filters': 'Filters',
-    'search.genre': 'Genre',
-    'search.type': 'Type',
-    'search.status': 'Status',
-    'search.score': 'Score',
-    'search.year': 'Year',
+    'Digite o nome de um anime...': 'Type the name of an anime...',
+    'Buscar': 'Search',
+    'Busca Avançada': 'Advanced Search',
+    'Filtros': 'Filters',
+    'Gênero': 'Genre',
+    'Tipo': 'Type',
+    'Status': 'Status',
+    'Pontuação': 'Score',
+    'Ano': 'Year',
+    'Nenhum resultado encontrado': 'No results found',
+    
+    // Common
+    'Carregando...': 'Loading...',
+    'Erro': 'Error',
+    'Sucesso': 'Success',
+    'Salvar': 'Save',
+    'Cancelar': 'Cancel',
+    'Editar': 'Edit',
+    'Excluir': 'Delete',
+    'Filtrar': 'Filter',
+    'Limpar': 'Clear',
     
     // Anime details
-    'anime.rating': 'Rating',
-    'anime.episodes': 'Episodes',
-    'anime.status': 'Status',
-    'anime.genres': 'Genres',
-    'anime.synopsis': 'Synopsis',
-    'anime.addToList': 'Add to List',
-    'anime.removeFromList': 'Remove from List',
+    'Avaliação': 'Rating',
+    'Episódios': 'Episodes',
+    'Gêneros': 'Genres',
+    'Sinopse': 'Synopsis',
+    'Adicionar à Lista': 'Add to List',
+    'Remover da Lista': 'Remove from List',
     
     // Lists
-    'list.watching': 'Watching',
-    'list.planToWatch': 'Plan to Watch',
-    'list.completed': 'Completed',
-    'list.dropped': 'Dropped',
-    'list.empty': 'No animes in this list',
+    'Nenhum anime nesta lista': 'No anime in this list',
     
     // Settings
-    'settings.general': 'General',
-    'settings.appearance': 'Appearance',
-    'settings.language': 'Language',
-    'settings.notifications': 'Notifications',
-    'settings.privacy': 'Privacy',
-    'settings.data': 'Data',
-    'settings.account': 'Account',
-    'settings.theme': 'Theme',
-    'settings.light': 'Light',
-    'settings.dark': 'Dark',
-    'settings.auto': 'Auto',
+    'Geral': 'General',
+    'Aparência': 'Appearance',
+    'Idioma': 'Language',
+    'Notificações': 'Notifications',
+    'Privacidade': 'Privacy',
+    'Dados': 'Data',
+    'Conta': 'Account',
+    'Tema': 'Theme',
+    'Claro': 'Light',
+    'Escuro': 'Dark',
+    'Automático': 'Auto',
     
     // Auth
-    'auth.login': 'Login',
-    'auth.logout': 'Logout',
-    'auth.loginWithGoogle': 'Login with Google',
-    'auth.userProfile': 'User Profile',
-    'auth.ageVerification': 'Age Verification',
-    'auth.adultContent': 'Adult Content',
+    'Entrar': 'Login',
+    'Perfil do Usuário': 'User Profile',
+    'Verificação de Idade': 'Age Verification',
+    'Conteúdo Adulto': 'Adult Content',
     
     // Notifications
-    'notification.success': 'Success',
-    'notification.error': 'Error',
-    'notification.warning': 'Warning',
-    'notification.info': 'Information',
+    'Aviso': 'Warning',
+    'Informação': 'Information',
+    
+    // Pages
+    'Início': 'Home',
+    'Minhas Avaliações': 'My Ratings',
+    'Planejo Assistir': 'Plan to Watch',
+    'Completos': 'Completed',
+    'Desistidos': 'Dropped',
   }
 };
 
@@ -182,7 +218,24 @@ const createTranslateFunction = (language, dicts) => {
 
 // Provider component
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguage] = useState('pt');
+  // Get language from localStorage or default to 'pt'
+  const [language, setLanguage] = useState(() => {
+    try {
+      return localStorage.getItem('allnime-language') || 'pt';
+    } catch {
+      return 'pt';
+    }
+  });
+
+  // Update localStorage when language changes
+  const handleSetLanguage = (newLanguage) => {
+    setLanguage(newLanguage);
+    try {
+      localStorage.setItem('allnime-language', newLanguage);
+    } catch {
+      // Ignore localStorage errors
+    }
+  };
 
   const translate = useMemo(() => {
     return createTranslateFunction(language, DICTS);
@@ -190,7 +243,7 @@ export const LanguageProvider = ({ children }) => {
 
   const value = useMemo(() => ({
     language,
-    setLanguage,
+    setLanguage: handleSetLanguage,
     translate,
     t: translate, // alias
   }), [language, translate]);
