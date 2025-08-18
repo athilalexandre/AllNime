@@ -303,38 +303,49 @@ class LoggerService {
 
   // Firebase specific logging
   logFirebaseError(error, context = '') {
+    // Check if error exists and has required properties
+    if (!error) {
+      this.error('Firebase Error: No error object provided', {
+        context: context,
+        suggestion: 'Check Firebase initialization and configuration'
+      }, 'firebase');
+      return;
+    }
+
     this.error('Firebase Error', {
-      code: error.code,
-      message: error.message,
-      stack: error.stack,
+      code: error.code || 'unknown',
+      message: error.message || 'Unknown Firebase error',
+      stack: error.stack || 'No stack trace available',
       context: context
     }, 'firebase');
 
     // Special handling for common Firebase errors
-    switch (error.code) {
-      case 'auth/invalid-api-key':
-        this.critical('Firebase API Key Invalid', {
-          error: error,
-          suggestion: 'Check VITE_FIREBASE_API_KEY environment variable',
-          context: context
-        }, 'firebase');
-        break;
-      
-      case 'auth/network-request-failed':
-        this.warn('Firebase Network Error', {
-          error: error,
-          suggestion: 'Check internet connection and Firebase project status',
-          context: context
-        }, 'firebase');
-        break;
-      
-      case 'auth/quota-exceeded':
-        this.warn('Firebase Quota Exceeded', {
-          error: error,
-          suggestion: 'Firebase project quota reached, check Firebase console',
-          context: context
-        }, 'firebase');
-        break;
+    if (error.code) {
+      switch (error.code) {
+        case 'auth/invalid-api-key':
+          this.critical('Firebase API Key Invalid', {
+            error: error,
+            suggestion: 'Check VITE_FIREBASE_API_KEY environment variable',
+            context: context
+          }, 'firebase');
+          break;
+        
+        case 'auth/network-request-failed':
+          this.warn('Firebase Network Error', {
+            error: error,
+            suggestion: 'Check internet connection and Firebase project status',
+            context: context
+          }, 'firebase');
+          break;
+        
+        case 'auth/quota-exceeded':
+          this.warn('Firebase Quota Exceeded', {
+            error: error,
+            suggestion: 'Firebase project quota reached, check Firebase console',
+            context: context
+          }, 'firebase');
+          break;
+      }
     }
   }
 

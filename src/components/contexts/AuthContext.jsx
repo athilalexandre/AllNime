@@ -124,7 +124,15 @@ export const AuthProvider = ({ children }) => {
       showSuccess('Login realizado com sucesso!');
     } catch (error) {
       console.error('Erro no login:', error);
-      showError(`Erro no login: ${error.message}`);
+      
+      // Handle different error types
+      if (error && error.userMessage) {
+        showError(`Erro no login: ${error.userMessage}`);
+      } else if (error && error.message) {
+        showError(`Erro no login: ${error.message}`);
+      } else {
+        showError('Erro no login: Ocorreu um erro inesperado. Tente novamente.');
+      }
     }
   };
 
@@ -134,7 +142,15 @@ export const AuthProvider = ({ children }) => {
       showSuccess('Logout realizado com sucesso!');
     } catch (error) {
       console.error('Erro no logout:', error);
-      showError(`Erro no logout: ${error.message}`);
+      
+      // Handle different error types
+      if (error && error.userMessage) {
+        showError(`Erro no logout: ${error.userMessage}`);
+      } else if (error && error.message) {
+        showError(`Erro no logout: ${error.message}`);
+      } else {
+        showError('Erro no logout: Ocorreu um erro inesperado. Tente novamente.');
+      }
     }
   };
 

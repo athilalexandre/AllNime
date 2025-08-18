@@ -142,36 +142,52 @@ const isFirebaseInitialized = () => {
 
 // Enhanced error handling for Firebase operations
 const handleFirebaseError = (error, operation, context = '') => {
+  // Ensure error is a valid object
+  if (!error || typeof error !== 'object') {
+    const fallbackError = new Error('Unknown Firebase error');
+    logFirebaseError(fallbackError, `${operation} - ${context}`);
+    
+    return {
+      error: fallbackError,
+      userMessage: 'An unexpected error occurred. Please try again.',
+      code: 'unknown',
+      operation: operation,
+      context: context
+    };
+  }
+
   logFirebaseError(error, `${operation} - ${context}`);
   
   // Provide user-friendly error messages
   let userMessage = 'An error occurred. Please try again.';
   
-  switch (error.code) {
-    case 'auth/invalid-api-key':
-      userMessage = 'Authentication service unavailable. Please contact support.';
-      break;
-    case 'auth/network-request-failed':
-      userMessage = 'Network error. Please check your internet connection.';
-      break;
-    case 'auth/popup-closed-by-user':
-      userMessage = 'Login cancelled. Please try again.';
-      break;
-    case 'auth/popup-blocked':
-      userMessage = 'Popup blocked. Please allow popups for this site.';
-      break;
-    case 'auth/unauthorized-domain':
-      userMessage = 'This domain is not authorized for authentication.';
-      break;
-    case 'auth/quota-exceeded':
-      userMessage = 'Service temporarily unavailable. Please try again later.';
-      break;
+  if (error.code) {
+    switch (error.code) {
+      case 'auth/invalid-api-key':
+        userMessage = 'Authentication service unavailable. Please contact support.';
+        break;
+      case 'auth/network-request-failed':
+        userMessage = 'Network error. Please check your internet connection.';
+        break;
+      case 'auth/popup-closed-by-user':
+        userMessage = 'Login cancelled. Please try again.';
+        break;
+      case 'auth/popup-blocked':
+        userMessage = 'Popup blocked. Please allow popups for this site.';
+        break;
+      case 'auth/unauthorized-domain':
+        userMessage = 'This domain is not authorized for authentication.';
+        break;
+      case 'auth/quota-exceeded':
+        userMessage = 'Service temporarily unavailable. Please try again later.';
+        break;
+    }
   }
   
   return {
     error: error,
     userMessage: userMessage,
-    code: error.code,
+    code: error.code || 'unknown',
     operation: operation,
     context: context
   };
@@ -252,21 +268,37 @@ const enhancedOnAuthStateChanged = (callback, context = '') => {
     return () => {}; // Return no-op unsubscribe function
   }
 
+  // Ensure callback is a function
+  if (typeof callback !== 'function') {
+    logger.error('Invalid callback provided to onAuthStateChanged', {
+      callbackType: typeof callback,
+      context: context
+    }, 'firebase');
+    return () => {}; // Return no-op unsubscribe function
+  }
+
   logger.info('Setting up auth state listener', { context: context }, 'firebase');
   
   return onAuthStateChanged(auth, (user) => {
-    if (user) {
-      logger.info('User authenticated', {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
+    try {
+      if (user) {
+        logger.info('User authenticated', {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          context: context
+        }, 'firebase');
+      } else {
+        logger.info('User signed out', { context: context }, 'firebase');
+      }
+      
+      callback(user);
+    } catch (error) {
+      logger.error('Error in auth state callback', {
+        error: error.message,
         context: context
       }, 'firebase');
-    } else {
-      logger.info('User signed out', { context: context }, 'firebase');
     }
-    
-    callback(user);
   }, (error) => {
     const errorInfo = handleFirebaseError(error, 'auth-state-change', context);
     logger.error('Auth state change error', errorInfo, 'firebase');
