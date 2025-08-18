@@ -82,11 +82,10 @@ const DICTS = {
      'Gêneros': 'Gêneros',
      'Sinopse': 'Sinopse',
      'Adicionar à Lista': 'Adicionar à Lista',
-     'Remover da Lista': 'Remover da Lista',
-     'Informações Técnicas': 'Informações Técnicas',
-     'Tipo': 'Tipo',
-     'Duração por Ep.': 'Duração por Ep.',
-     'Estúdios': 'Estúdios',
+               'Remover da Lista': 'Remover da Lista',
+          'Informações Técnicas': 'Informações Técnicas',
+          'Duração por Ep.': 'Duração por Ep.',
+          'Estúdios': 'Estúdios',
     
     // Lists
     'Nenhum anime nesta lista': 'Nenhum anime nesta lista',
@@ -117,9 +116,8 @@ const DICTS = {
     // Pages
     'Início': 'Início',
     'Minhas Avaliações': 'Minhas Avaliações',
-    'Planejo Assistir': 'Planejo Assistir',
-    'Completos': 'Completos',
-    'Desistidos': 'Desistidos',
+              'Planejo Assistir': 'Planejo Assistir',
+          'Completos': 'Completos',
   },
   en: {
     // Header & Navigation
@@ -195,11 +193,10 @@ const DICTS = {
      'Gêneros': 'Genres',
      'Sinopse': 'Synopsis',
      'Adicionar à Lista': 'Add to List',
-     'Remover da Lista': 'Remove from List',
-     'Informações Técnicas': 'Technical Information',
-     'Tipo': 'Type',
-     'Duração por Ep.': 'Duration per Ep.',
-     'Estúdios': 'Studios',
+               'Remover da Lista': 'Remove from List',
+          'Informações Técnicas': 'Technical Information',
+          'Duração por Ep.': 'Duration per Ep.',
+          'Estúdios': 'Studios',
     
     // Lists
     'Nenhum anime nesta lista': 'No anime in this list',
@@ -230,9 +227,8 @@ const DICTS = {
     // Pages
     'Início': 'Home',
     'Minhas Avaliações': 'My Ratings',
-    'Planejo Assistir': 'Plan to Watch',
-    'Completos': 'Completed',
-    'Desistidos': 'Dropped',
+              'Planejo Assistir': 'Plan to Watch',
+          'Completos': 'Completed',
   }
 };
 

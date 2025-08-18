@@ -7,6 +7,8 @@ const API_BASE_URL = 'https://api.jikan.moe/v4';
 const MIN_REQUEST_INTERVAL_MS = 1200; // Increased to be more conservative
 let lastRequestAt = 0;
 
+// Initialize cache from localStorage (moved to after function definition)
+
 // localStorage keys for persistent cache
 const STORAGE_KEYS = {
   cacheData: 'jikan_cache_data',
@@ -72,6 +74,9 @@ const loadCacheFromStorage = () => {
   }
 };
 
+// Initialize cache from localStorage
+loadCacheFromStorage();
+
 const setCache = (key, data) => {
   // Clean old entries if cache is full
   if (cache.data.size >= cache.maxSize) {
@@ -94,6 +99,12 @@ const clearCache = () => {
     localStorage.removeItem(STORAGE_KEYS.cacheTimes);
   } catch (_) {}
 };
+
+// Clear cache on development to avoid stale data
+if (process.env.NODE_ENV === 'development') {
+  clearCache();
+  console.log('🧹 Cache limpo em desenvolvimento');
+}
 
 // Rate limiting functions
 const checkRateLimit = () => {
@@ -251,29 +262,50 @@ export const searchAnimes = async (query, options = {}, canAccessAdultContent = 
   } = options;
 
   try {
+    // Parâmetros básicos - sem sfw para evitar erro 400
     const params = {
       q: query.trim(),
-      sfw: !canAccessAdultContent,
       page,
-      limit,
-      order_by: orderBy,
-      sort
+      limit
     };
+
+    // Only add order_by and sort if they are valid values
+    if (orderBy && ['title', 'score', 'popularity', 'rank', 'rating', 'start_date', 'end_date', 'episodes', 'id'].includes(orderBy)) {
+      params.order_by = orderBy;
+    }
+    
+    if (sort && ['asc', 'desc'].includes(sort)) {
+      params.sort = sort;
+    }
 
     if (genre) params.genres = genre;
     if (type) params.type = type;
     if (status) params.status = status;
 
+    console.log('🔍 Parâmetros da busca:', params);
+    console.log('🔍 URL da busca:', `${API_BASE_URL}/anime`);
+
     const response = await makeRequest(`${API_BASE_URL}/anime`, params);
+    
+    console.log('🔍 Resposta bruta da API:', response);
 
     if (response?.data && Array.isArray(response.data)) {
-      const filtered = response.data.filter(item => 
+      // Filtrar conteúdo adulto se necessário
+      let filtered = response.data.filter(item => 
         item?.approved !== false && 
         item?.mal_id && 
         item?.mal_id > 0 &&
         item?.title && 
         item?.title.trim() !== ''
       );
+
+      // Se não pode acessar conteúdo adulto, filtrar por rating
+      if (!canAccessAdultContent) {
+        filtered = filtered.filter(item => {
+          const rating = item?.rating;
+          return !rating || !rating.includes('R+') && !rating.includes('Rx');
+        });
+      }
       
       return { 
         ...response, 
@@ -304,7 +336,6 @@ export const getTopAnimes = async (options = {}, canAccessAdultContent = false) 
 
   try {
     const params = {
-      sfw: !canAccessAdultContent,
       page,
       limit,
       type,
@@ -314,13 +345,21 @@ export const getTopAnimes = async (options = {}, canAccessAdultContent = false) 
     const response = await makeRequest(`${API_BASE_URL}/top/anime`, params);
 
     if (response?.data && Array.isArray(response.data)) {
-      const filtered = response.data.filter(item => 
+      let filtered = response.data.filter(item => 
         item?.approved !== false && 
         item?.mal_id && 
         item?.mal_id > 0 &&
         item?.title && 
         item?.title.trim() !== ''
       );
+
+      // Se não pode acessar conteúdo adulto, filtrar por rating
+      if (!canAccessAdultContent) {
+        filtered = filtered.filter(item => {
+          const rating = item?.rating;
+          return !rating || !rating.includes('R+') && !rating.includes('Rx');
+        });
+      }
       
       return { 
         ...response, 
@@ -348,7 +387,6 @@ export const getSeasonalAnimes = async (options = {}, canAccessAdultContent = fa
 
   try {
     const params = {
-      sfw: !canAccessAdultContent,
       page,
       limit,
       filter
@@ -357,13 +395,21 @@ export const getSeasonalAnimes = async (options = {}, canAccessAdultContent = fa
     const response = await makeRequest(`${API_BASE_URL}/seasons/now`, params);
 
     if (response?.data && Array.isArray(response.data)) {
-      const filtered = response.data.filter(item => 
+      let filtered = response.data.filter(item => 
         item?.approved !== false && 
         item?.mal_id && 
         item?.mal_id > 0 &&
         item?.title && 
         item?.title.trim() !== ''
       );
+
+      // Se não pode acessar conteúdo adulto, filtrar por rating
+      if (!canAccessAdultContent) {
+        filtered = filtered.filter(item => {
+          const rating = item?.rating;
+          return !rating || !rating.includes('R+') && !rating.includes('Rx');
+        });
+      }
       
       return { 
         ...response, 
@@ -535,7 +581,6 @@ export const searchAnimesAdvanced = async (filters = {}, canAccessAdultContent =
 
   try {
     const params = {
-      sfw: !canAccessAdultContent,
       page,
       limit,
       order_by: orderBy,
@@ -555,13 +600,21 @@ export const searchAnimesAdvanced = async (filters = {}, canAccessAdultContent =
     const response = await makeRequest(`${API_BASE_URL}/anime`, params);
 
     if (response?.data && Array.isArray(response.data)) {
-      const filtered = response.data.filter(item => 
+      let filtered = response.data.filter(item => 
         item?.approved !== false && 
         item?.mal_id && 
         item?.mal_id > 0 &&
         item?.title && 
         item?.title.trim() !== ''
       );
+
+      // Se não pode acessar conteúdo adulto, filtrar por rating
+      if (!canAccessAdultContent) {
+        filtered = filtered.filter(item => {
+          const rating = item?.rating;
+          return !rating || !rating.includes('R+') && !rating.includes('Rx');
+        });
+      }
       
       return { 
         ...response, 

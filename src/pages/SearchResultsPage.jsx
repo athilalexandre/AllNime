@@ -22,24 +22,61 @@ const SearchResultsPage = () => {
     }
   }, [query, sortBy]);
 
-  const performSearch = async () => {
+    const performSearch = async () => {
     setLoading(true);
     setError(null);
     
+    console.log('🔍 Iniciando busca:', { query, sortBy, canAccess: canAccess() });
+    
     try {
+      // Mapear sortBy para os parâmetros corretos da API
+      let orderBy = 'popularity'; // padrão
+      let sort = 'desc'; // padrão
+      
+      switch (sortBy) {
+        case 'relevance':
+          orderBy = 'popularity';
+          sort = 'desc';
+          break;
+        case 'title':
+          orderBy = 'title';
+          sort = 'asc';
+          break;
+        case 'score':
+          orderBy = 'score';
+          sort = 'desc';
+          break;
+        default:
+          orderBy = 'popularity';
+          sort = 'desc';
+      }
+      
+      console.log('🔍 Parâmetros finais:', { query, orderBy, sort, limit: 25 });
+      
       const response = await searchAnimes(query, { 
-        limit: 50,
-        sort: sortBy === 'score' ? 'desc' : 'asc',
-        orderBy: sortBy === 'score' ? 'score' : 'title'
+        limit: 25,
+        sort,
+        orderBy
       }, canAccess());
       
-      if (response?.data) {
+      console.log('✅ Resposta da busca:', response);
+      console.log('✅ Tipo da resposta:', typeof response);
+      console.log('✅ Tem data?', !!response?.data);
+      console.log('✅ Data é array?', Array.isArray(response?.data));
+      console.log('✅ Tamanho do data:', response?.data?.length);
+      
+      if (response?.data && Array.isArray(response.data)) {
         setAnimes(response.data);
+        console.log(`📊 ${response.data.length} animes encontrados`);
+        console.log('📊 Primeiros animes:', response.data.slice(0, 3).map(a => ({ id: a.mal_id, title: a.title })));
       } else {
         setAnimes([]);
+        console.log('📊 Nenhum anime encontrado ou resposta inválida');
+        console.log('📊 Estrutura da resposta:', response);
       }
     } catch (error) {
-      console.error('Erro na busca:', error);
+      console.error('❌ Erro na busca:', error);
+      console.error('❌ Stack trace:', error.stack);
       setError('Erro ao realizar a busca. Tente novamente.');
     } finally {
       setLoading(false);

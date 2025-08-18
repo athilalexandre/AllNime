@@ -109,10 +109,10 @@ export const AuthProvider = ({ children }) => {
     }
     
     try {
-      const unsub = onAuthStateChanged(auth, (current) => {
+      const unsub = onAuthStateChanged((current) => {
         setUser(current);
         setLoading(false);
-      });
+      }, 'AuthContext');
       
       // Timeout de segurança para evitar loading infinito
       const timeout = setTimeout(() => {
@@ -169,7 +169,9 @@ export const AuthProvider = ({ children }) => {
 
   // Verifica se o usuário pode acessar conteúdo adulto
   const canAccessAdultContent = useMemo(() => {
-    return canUserAccessAdultContent(user);
+    const result = canUserAccessAdultContent(user);
+    console.log('🔐 AuthContext - canAccessAdultContent:', { user: !!user, result });
+    return result;
   }, [user]);
 
   // Verifica se o usuário é adulto

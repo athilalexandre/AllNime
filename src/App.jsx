@@ -7,6 +7,7 @@ import { NotificationProvider } from './components/contexts/NotificationContext'
 import HomePage from './pages/HomePage';
 import AnimeDetailPage from './pages/AnimeDetailPage';
 import EditAnimePage from './pages/EditAnimePage';
+import SearchResultsPage from './pages/SearchResultsPage';
 import Header from './components/layout/Header';
 import MyRatingsPage from './pages/MyRatingsPage';
 import PlanToWatchPage from './pages/PlanToWatchPage';
@@ -194,6 +195,7 @@ function App() {
                   <Route path="/" element={<HomePage />} />
                   <Route path="/anime/:id" element={<AnimeDetailPage />} />
                   <Route path="/anime/:id/edit" element={<EditAnimePage />} />
+                  <Route path="/search" element={<SearchResultsPage />} />
                   <Route path="/my-ratings" element={<MyRatingsPage />} />
                   <Route path="/plan-to-watch" element={<PlanToWatchPage />} />
                   <Route path="/watching" element={<WatchingPage />} />
