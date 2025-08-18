@@ -4,6 +4,7 @@ import { searchAnimes } from '../services/jikanService';
 import { useAdultContent } from '../hooks/useAdultContent';
 import AnimeCard from '../components/common/AnimeCard';
 import { Search, Filter, Grid, List, Star, Calendar, TrendingUp } from 'lucide-react';
+import { useLanguage } from '../components/contexts/LanguageContext';
 
 const SearchResultsPage = () => {
   const [searchParams] = useSearchParams();
@@ -13,6 +14,7 @@ const SearchResultsPage = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [sortBy, setSortBy] = useState('relevance');
   const { canAccess } = useAdultContent();
+  const { translate } = useLanguage();
 
   const query = searchParams.get('q') || '';
 
@@ -85,10 +87,10 @@ const SearchResultsPage = () => {
 
   const getSortLabel = (value) => {
     switch (value) {
-      case 'relevance': return 'Relevância';
-      case 'title': return 'Título A-Z';
-      case 'score': return 'Melhor Avaliados';
-      default: return 'Relevância';
+      case 'relevance': return translate('Relevância');
+      case 'title': return translate('Título');
+      case 'score': return translate('Pontuação');
+      default: return translate('Relevância');
     }
   };
 
@@ -98,7 +100,7 @@ const SearchResultsPage = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-light"></div>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">Buscando animes...</p>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">{translate('Carregando animes...')}</p>
           </div>
         </div>
       </div>
@@ -113,19 +115,19 @@ const SearchResultsPage = () => {
           <div className="flex items-center space-x-2 mb-4">
             <Search className="w-6 h-6 text-primary-light" />
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Resultados da Busca
+              {translate('Resultados da Busca')}
             </h1>
           </div>
           
           {query && (
             <p className="text-lg text-gray-600 dark:text-gray-400">
-              Buscando por: <span className="font-semibold text-primary-light">"{query}"</span>
+              {translate('Buscando por:')} <span className="font-semibold text-primary-light">"{query}"</span>
             </p>
           )}
           
           {animes.length > 0 && (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              {animes.length} anime{animes.length !== 1 ? 's' : ''} encontrado{animes.length !== 1 ? 's' : ''}
+              {animes.length} {translate('animes encontrados')}
             </p>
           )}
         </div>
@@ -140,9 +142,9 @@ const SearchResultsPage = () => {
               onChange={(e) => setSortBy(e.target.value)}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
             >
-              <option value="relevance">Relevância</option>
-              <option value="title">Título A-Z</option>
-              <option value="score">Melhor Avaliados</option>
+              <option value="relevance">{translate('Relevância')}</option>
+              <option value="title">{translate('Título')}</option>
+              <option value="score">{translate('Pontuação')}</option>
             </select>
           </div>
 
@@ -178,14 +180,14 @@ const SearchResultsPage = () => {
               <Search className="w-16 h-16 mx-auto" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              Erro na busca
+              {translate('Erro')}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
             <button
               onClick={performSearch}
               className="px-4 py-2 bg-primary-light hover:bg-primary-dark text-white rounded-md transition-colors"
             >
-              Tentar novamente
+              {translate('Tentar novamente')}
             </button>
           </div>
         ) : animes.length > 0 ? (
@@ -202,21 +204,21 @@ const SearchResultsPage = () => {
           <div className="text-center py-12">
             <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              Nenhum anime encontrado
+              {translate('Nenhum anime encontrado')}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Não encontramos animes para "{query}". Tente:
+              {translate('Não encontramos animes para')} "{query}". {translate('Tente:')}
             </p>
             <ul className="text-sm text-gray-500 dark:text-gray-400 space-y-1 mb-6">
-              <li>• Verificar a ortografia</li>
-              <li>• Usar termos mais gerais</li>
-              <li>• Tentar sinônimos</li>
+              <li>• {translate('Verificar a ortografia')}</li>
+              <li>• {translate('Usar termos mais gerais')}</li>
+              <li>• {translate('Tentar sinônimos')}</li>
             </ul>
             <Link
               to="/explore"
               className="inline-flex items-center px-4 py-2 bg-primary-light hover:bg-primary-dark text-white rounded-md transition-colors"
             >
-              Explorar Animes
+              {translate('Explorar Animes')}
             </Link>
           </div>
         )}

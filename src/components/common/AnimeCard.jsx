@@ -5,7 +5,7 @@ import { processSynopsis } from '../../services/translationService';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const AnimeCard = ({ anime, viewMode = 'grid' }) => {
-  const { language } = useLanguage();
+  const { language, translate } = useLanguage();
   
   const handleImageError = (e) => {
     e.target.onerror = null;
@@ -82,7 +82,7 @@ const AnimeCard = ({ anime, viewMode = 'grid' }) => {
                   className="inline-flex items-center space-x-1 px-3 py-2 bg-primary-light hover:bg-primary-dark text-white text-sm font-medium rounded-md transition-colors"
                 >
                   <Eye className="w-4 h-4" />
-                  <span>Ver Detalhes</span>
+                  <span>{translate('Ver Detalhes')}</span>
                 </Link>
               </div>
             </div>
@@ -108,7 +108,7 @@ const AnimeCard = ({ anime, viewMode = 'grid' }) => {
         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center">
           <div className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-center">
             <Eye size={24} className="mx-auto mb-2" />
-            <span className="text-sm">Ver detalhes</span>
+            <span className="text-sm">{translate('Ver Detalhes')}</span>
           </div>
         </div>
 
@@ -123,9 +123,9 @@ const AnimeCard = ({ anime, viewMode = 'grid' }) => {
         {/* Status */}
         {anime.status && (
           <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-            {anime.status === 'Currently Airing' ? 'Em Exibição' : 
-             anime.status === 'Finished Airing' ? 'Finalizado' : 
-             anime.status === 'Not yet aired' ? 'Não Exibido' : anime.status}
+            {anime.status === 'Currently Airing' ? translate('Em Exibição') : 
+             anime.status === 'Finished Airing' ? translate('Finalizado') : 
+             anime.status === 'Not yet aired' ? translate('Não Exibido') : anime.status}
           </div>
         )}
       </div>
@@ -147,7 +147,7 @@ const AnimeCard = ({ anime, viewMode = 'grid' }) => {
           {anime.episodes && (
             <p className="flex items-center space-x-1">
               <TrendingUp className="w-3 h-3" />
-              {anime.episodes} episódios
+              {anime.episodes} {translate('episódios')}
             </p>
           )}
           
@@ -166,7 +166,7 @@ const AnimeCard = ({ anime, viewMode = 'grid' }) => {
             className="w-full inline-flex items-center justify-center space-x-1 px-3 py-2 bg-primary-light hover:bg-primary-dark text-white text-sm font-medium rounded-md transition-colors"
           >
             <Eye className="w-4 h-4" />
-            <span>Ver Detalhes</span>
+            <span>{translate('Ver Detalhes')}</span>
           </Link>
         </div>
       </div>

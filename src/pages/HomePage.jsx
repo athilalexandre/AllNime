@@ -83,7 +83,7 @@ const HomePage = () => {
               to="/explore"
               className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-primary-light hover:bg-primary-dark rounded-md transition-colors"
             >
-              Explorar Animes
+              {translate('Explorar Animes')}
             </Link>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, X, TrendingUp, Clock, Star } from 'lucide-react';
 import { searchAnimes } from '../../../services/jikanService';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import logger from '../../../services/loggerService.js';
 
 const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "" }) => {
@@ -20,6 +21,7 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
   const searchRef = useRef(null);
   const navigate = useNavigate();
   const { canAccessAdultContent } = useAuth();
+  const { translate } = useLanguage();
 
   // Log component initialization
   useEffect(() => {
@@ -169,9 +171,9 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder={placeholder}
-            className="w-full px-4 py-3 pl-12 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                             onChange={(e) => setSearchTerm(e.target.value)}
+                 placeholder={translate(placeholder)}
+                 className="w-full px-4 py-3 pl-12 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             onFocus={() => {
               if (searchTerm.trim().length >= 2 || recentSearches.length > 0 || popularSearches.length > 0) {
                 setShowSuggestions(true);
@@ -197,12 +199,12 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
           )}
         </div>
         
-        <button
-          type="submit"
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary-light hover:bg-primary-dark text-white px-4 py-1.5 rounded-md font-medium transition-colors text-sm"
-        >
-          Buscar
-        </button>
+                       <button
+                 type="submit"
+                 className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary-light hover:bg-primary-dark text-white px-4 py-1.5 rounded-md font-medium transition-colors text-sm"
+               >
+                 {translate('Buscar')}
+               </button>
       </form>
 
       {/* Dropdown de sugestões */}
@@ -211,10 +213,10 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
           {/* Sugestões da API */}
           {suggestions.length > 0 && (
             <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                <Star className="w-4 h-4 mr-2 text-yellow-500" />
-                Sugestões
-              </h3>
+                                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                       <Star className="w-4 h-4 mr-2 text-yellow-500" />
+                       {translate('Sugestões')}
+                     </h3>
               <div className="space-y-2">
                 {suggestions.map((anime) => (
                   <button
@@ -257,10 +259,10 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
           {/* Buscas recentes */}
           {recentSearches.length > 0 && (
             <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                <Clock className="w-4 h-4 mr-2 text-blue-500" />
-                Buscas Recentes
-              </h3>
+                                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                     <Clock className="w-4 h-4 mr-2 text-blue-500" />
+                     {translate('Buscas Recentes')}
+                   </h3>
               <div className="space-y-1">
                 {recentSearches.map((search, index) => (
                   <button
@@ -278,10 +280,10 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
           {/* Buscas populares */}
           {popularSearches.length > 0 && (
             <div className="p-3">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
-                Populares
-              </h3>
+                                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                     <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
+                     {translate('Populares')}
+                   </h3>
               <div className="space-y-1">
                 {popularSearches.map((search, index) => (
                   <button
@@ -298,11 +300,11 @@ const SearchBar = ({ placeholder = "Digite o nome de um anime...", className = "
 
           {/* Loading state */}
           {isLoading && (
-            <div className="p-3 text-center">
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                Buscando sugestões...
-              </div>
-            </div>
+                             <div className="p-3 text-center">
+                   <div className="text-sm text-gray-500 dark:text-gray-400">
+                     {translate('Buscando sugestões...')}
+                   </div>
+                 </div>
           )}
         </div>
       )}
