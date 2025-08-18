@@ -70,6 +70,50 @@ export const localizeAnimeFields = (anime, language = 'pt') => {
 };
 
 // Na prática, traduções automáticas podem falhar (CORS/limites). Mantemos como best-effort com cache.
+// Função para processar sinopse e remover duplicidades de créditos
+export const processSynopsis = (synopsis, language = 'pt') => {
+	if (!synopsis) return { text: '', credit: '' };
+	
+	// Remove tags HTML
+	const cleanText = synopsis.replace(/<[^>]*>?/gm, '');
+	
+	// Padrões de crédito em diferentes idiomas
+	const creditPatterns = [
+		/\[Escrito por .*?\]/i, // Português
+		/\[Written by .*?\]/i,  // Inglês
+		/\[Écrit par .*?\]/i,   // Francês
+		/\[Escrito por .*?\]/i, // Espanhol
+		/\[Geschrieben von .*?\]/i, // Alemão
+		/\[Scritto da .*?\]/i,  // Italiano
+		/\[書かれた .*?\]/i,     // Japonês
+		/\[작성자: .*?\]/i,      // Coreano
+		/\[作者: .*?\]/i,        // Chinês
+	];
+	
+	let credit = '';
+	let processedText = cleanText;
+	
+	// Procura por qualquer padrão de crédito
+	for (const pattern of creditPatterns) {
+		const match = cleanText.match(pattern);
+		if (match) {
+			credit = match[0];
+			// Remove o crédito do texto principal
+			processedText = cleanText.replace(pattern, '').trim();
+			console.log(`🎯 Crédito encontrado e removido: ${credit}`);
+			break;
+		}
+	}
+	
+	// Formata quebras de linha
+	processedText = processedText.replace(/\n/g, '\n\n');
+	
+	return {
+		text: processedText,
+		credit: credit
+	};
+};
+
 export const translateTextSafe = async (text, targetLang = 'pt') => {
 	try {
 		if (!text || targetLang !== 'pt') return text;

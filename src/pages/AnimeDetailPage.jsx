@@ -6,7 +6,7 @@ import { getAnimeDetailsById } from '../services/jikanService';
 import { getAnimeWatchInfo } from '../services/consumetService';
 import { Star, Share2 } from 'lucide-react'; // Ícone de estrela e compartilhamento
 import { useLanguage } from '../components/contexts/LanguageContext';
-import { getEnglishTitle, localizeAnimeFields, translateTextSafe } from '../services/translationService';
+import { getEnglishTitle, localizeAnimeFields, translateTextSafe, processSynopsis } from '../services/translationService';
 import WatchlistControls from '../components/features/anime-detail/WatchlistControls'; // Adicionar import
 import ShareControls from '../components/features/sharing/ShareControls';
 import SharePreviewModal from '../components/features/sharing/SharePreviewModal';
@@ -227,8 +227,8 @@ const AnimeDetailPage = () => {
   const displayImage = anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || '';
   const displayTitle = language === 'en' ? getEnglishTitle(anime) || anime.title || 'N/A' : (anime.title || getEnglishTitle(anime) || 'N/A');
   const displayJapaneseTitle = anime.title_japanese || 'N/A';
-  const cleanSynopsis = anime.synopsis ? anime.synopsis.replace(/<[^>]*>?/gm, '') : 'N/A';
-  const displaySynopsis = cleanSynopsis.replace(/\n/g, '\n\n');
+  // Processa a sinopse globalmente para todas as linguagens
+  const { text: displaySynopsis, credit: synopsisCredit } = processSynopsis(anime.synopsis, language);
   const displayClassification = anime.rating || 'N/A';
   const displayPopularity = anime.popularity ? `#${anime.popularity}` : 'N/A';
   const displayTrailerId = anime.trailer?.youtube_id;
@@ -278,44 +278,184 @@ const AnimeDetailPage = () => {
           {/* Controles de Compartilhamento */}
           <ShareControls anime={anime} />
 
-          <div className="text-lg text-text-muted-light dark:text-text-muted-dark mb-4 space-y-1">
-            {displayJapaneseTitle && (<p><strong>{translate('Título em Japonês:')}</strong> {displayJapaneseTitle}</p>)}
-            {anime.status && (<p><strong>{translate('Status:')}</strong> {anime.status}</p>)}
-            {anime.episodes && (<p><strong>{translate('Episódios:')}</strong> {anime.episodes}</p>)}
-            {displayClassification && (<p><strong>{translate('Classificação:')}</strong> {displayClassification}</p>)}
-            {displayPopularity && (<p><strong>{translate('Popularidade:')}</strong> {displayPopularity}</p>)}
+          {/* Informações Principais */}
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6 mb-6 border border-blue-200 dark:border-blue-800">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {displayJapaneseTitle && (
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                    <span className="text-blue-600 dark:text-blue-400 text-sm font-bold">日</span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 font-medium uppercase tracking-wide">{translate('Título em Japonês')}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{displayJapaneseTitle}</p>
+                  </div>
+                </div>
+              )}
+              
+              {anime.status && (
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                    <span className="text-green-600 dark:text-green-400 text-sm">●</span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-green-600 dark:text-green-400 font-medium uppercase tracking-wide">{translate('Status')}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{anime.status}</p>
+                  </div>
+                </div>
+              )}
+              
+              {anime.episodes && (
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                    <span className="text-purple-600 dark:text-purple-400 text-sm font-bold">EP</span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-purple-600 dark:text-purple-400 font-medium uppercase tracking-wide">{translate('Episódios')}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{anime.episodes}</p>
+                  </div>
+                </div>
+              )}
+              
+              {displayClassification && (
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
+                    <span className="text-orange-600 dark:text-orange-400 text-sm font-bold">18</span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-orange-600 dark:text-orange-400 font-medium uppercase tracking-wide">{translate('Classificação')}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{displayClassification}</p>
+                  </div>
+                </div>
+              )}
+              
+              {displayPopularity && (
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-pink-100 dark:bg-pink-900 rounded-lg flex items-center justify-center">
+                    <span className="text-pink-600 dark:text-pink-400 text-sm font-bold">🔥</span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-pink-600 dark:text-pink-400 font-medium uppercase tracking-wide">{translate('Popularidade')}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{displayPopularity}</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          <h2 className="text-2xl font-semibold mt-6 mb-2 text-text-light dark:text-text-dark">{translate('Sinopse')}</h2>
-          <p className="text-text-muted-light dark:text-text-muted-dark mb-6 leading-relaxed whitespace-pre-wrap">
-            {displaySynopsis}
-          </p>
+                     {/* Sinopse */}
+           <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-8 mb-6 border border-gray-200 dark:border-gray-700 shadow-lg">
+             <div className="flex items-center space-x-4 mb-6">
+               <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                 <span className="text-white text-lg">📖</span>
+               </div>
+               <div>
+                 <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{translate('Sinopse')}</h2>
+                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">História e enredo do anime</p>
+               </div>
+             </div>
+             
+             <div className="bg-white dark:bg-gray-800 rounded-lg p-8 border border-gray-100 dark:border-gray-700 shadow-sm">
+               <article className="historia-sinopse">
+                 <div className="text-gray-700 dark:text-gray-300 leading-relaxed space-y-6">
+                   {displaySynopsis.split('\n\n').map((paragraph, index) => {
+                     if (!paragraph.trim()) return null;
+                     
+                     // Quebrar parágrafos longos em blocos menores
+                     const sentences = paragraph.trim().split(/[.!?]+/).filter(s => s.trim());
+                     const chunks = [];
+                     let currentChunk = '';
+                     
+                     sentences.forEach(sentence => {
+                       const trimmedSentence = sentence.trim();
+                       if (!trimmedSentence) return;
+                       
+                       if ((currentChunk + trimmedSentence).length > 200) {
+                         if (currentChunk) chunks.push(currentChunk.trim());
+                         currentChunk = trimmedSentence;
+                       } else {
+                         currentChunk += (currentChunk ? '. ' : '') + trimmedSentence;
+                       }
+                     });
+                     
+                     if (currentChunk) chunks.push(currentChunk.trim());
+                     
+                     return chunks.map((chunk, chunkIndex) => (
+                       <div key={`${index}-${chunkIndex}`} className="sinopse-paragraph">
+                         <p className="text-base leading-7 text-gray-700 dark:text-gray-300 mb-4">
+                           {chunk}
+                         </p>
+                       </div>
+                     ));
+                   })}
+                 </div>
+                 
+                                   {/* Indicador de fonte se disponível */}
+                  {synopsisCredit && (
+                    <footer className="creditos-sinopse">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 italic text-right">
+                        {synopsisCredit}
+                      </p>
+                    </footer>
+                  )}
+               </article>
+             </div>
+           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 mb-6 text-sm">
-            {anime.type && (
-              <div>
-                <span className="font-semibold">{translate('Tipo:')} </span>
-                {anime.type}
+          {/* Informações Técnicas */}
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 mb-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-8 h-8 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                <span className="text-white text-sm font-bold">⚙️</span>
               </div>
-            )}
-            {anime.duration && (
-              <div>
-                <span className="font-semibold">{translate('Duração por Ep.:')} </span>
-                {anime.duration}
-              </div>
-            )}
-            {anime.genres && anime.genres.length > 0 && (
-              <div>
-                <span className="font-semibold">{translate('Gêneros:')} </span>
-                {anime.genres.map(g => g.name).join(', ')}
-              </div>
-            )}
-            {anime.studios && anime.studios.length > 0 && (
-              <div>
-                <span className="font-semibold">{translate('Estúdios:')} </span>
-                {anime.studios.map(s => s.name).join(', ')}
-              </div>
-            )}
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{translate('Informações Técnicas')}</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {anime.type && (
+                <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{translate('Tipo')}</span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{anime.type}</span>
+                </div>
+              )}
+              
+              {anime.duration && (
+                <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{translate('Duração por Ep.')}</span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{anime.duration}</span>
+                </div>
+              )}
+              
+              {anime.genres && anime.genres.length > 0 && (
+                <div className="md:col-span-2">
+                  <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{translate('Gêneros')}</span>
+                    <div className="flex flex-wrap gap-2">
+                      {anime.genres.map((g, index) => (
+                        <span key={index} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-medium rounded-full">
+                          {g.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {anime.studios && anime.studios.length > 0 && (
+                <div className="md:col-span-2">
+                  <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{translate('Estúdios')}</span>
+                    <div className="flex flex-wrap gap-2">
+                      {anime.studios.map((s, index) => (
+                        <span key={index} className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-medium rounded-full">
+                          {s.name}
+                        </span>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Controles da Watchlist */}

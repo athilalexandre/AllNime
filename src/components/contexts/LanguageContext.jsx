@@ -76,13 +76,17 @@ const DICTS = {
     'Página não encontrada.': 'Página não encontrada.',
     'Voltar para a Home': 'Voltar para a Home',
     
-    // Anime details
-    'Avaliação': 'Avaliação',
-    'Episódios': 'Episódios',
-    'Gêneros': 'Gêneros',
-    'Sinopse': 'Sinopse',
-    'Adicionar à Lista': 'Adicionar à Lista',
-    'Remover da Lista': 'Remover da Lista',
+         // Anime details
+     'Avaliação': 'Avaliação',
+     'Episódios': 'Episódios',
+     'Gêneros': 'Gêneros',
+     'Sinopse': 'Sinopse',
+     'Adicionar à Lista': 'Adicionar à Lista',
+     'Remover da Lista': 'Remover da Lista',
+     'Informações Técnicas': 'Informações Técnicas',
+     'Tipo': 'Tipo',
+     'Duração por Ep.': 'Duração por Ep.',
+     'Estúdios': 'Estúdios',
     
     // Lists
     'Nenhum anime nesta lista': 'Nenhum anime nesta lista',
@@ -185,13 +189,17 @@ const DICTS = {
     'Página não encontrada.': 'Page not found.',
     'Voltar para a Home': 'Back to Home',
     
-    // Anime details
-    'Avaliação': 'Rating',
-    'Episódios': 'Episodes',
-    'Gêneros': 'Genres',
-    'Sinopse': 'Synopsis',
-    'Adicionar à Lista': 'Add to List',
-    'Remover da Lista': 'Remove from List',
+         // Anime details
+     'Avaliação': 'Rating',
+     'Episódios': 'Episodes',
+     'Gêneros': 'Genres',
+     'Sinopse': 'Synopsis',
+     'Adicionar à Lista': 'Add to List',
+     'Remover da Lista': 'Remove from List',
+     'Informações Técnicas': 'Technical Information',
+     'Tipo': 'Type',
+     'Duração por Ep.': 'Duration per Ep.',
+     'Estúdios': 'Studios',
     
     // Lists
     'Nenhum anime nesta lista': 'No anime in this list',

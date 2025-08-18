@@ -3,6 +3,64 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Importar fontes modernas */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Estilos personalizados para a sinopse */
+.historia-sinopse {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.7;
+  color: #374151;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.dark .historia-sinopse {
+  color: #d1d5db;
+}
+
+.sinopse-paragraph p {
+  font-size: 16px;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  text-align: justify;
+  hyphens: auto;
+  word-wrap: break-word;
+}
+
+.sinopse-paragraph p:last-child {
+  margin-bottom: 0;
+}
+
+.creditos-sinopse {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.dark .creditos-sinopse {
+  border-top-color: #374151;
+}
+
+.creditos-sinopse p {
+  font-size: 14px;
+  color: #6b7280;
+  font-style: italic;
+  text-align: right;
+}
+
+.dark .creditos-sinopse p {
+  color: #9ca3af;
+}
+
+/* Melhorar legibilidade geral */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;

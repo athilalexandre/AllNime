@@ -1,12 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Eye, Play, Calendar, TrendingUp } from 'lucide-react';
+import { processSynopsis } from '../../services/translationService';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const AnimeCard = ({ anime, viewMode = 'grid' }) => {
+  const { language } = useLanguage();
+  
   const handleImageError = (e) => {
     e.target.onerror = null;
     e.target.src = 'https://via.placeholder.com/250x350?text=No+Image';
   };
+
+  // Processa a sinopse para remover duplicidades
+  const { text: processedSynopsis } = processSynopsis(anime.synopsis, language);
 
   if (viewMode === 'list') {
     return (
@@ -50,13 +57,13 @@ const AnimeCard = ({ anime, viewMode = 'grid' }) => {
                   )}
                 </div>
                 
-                {anime.synopsis && (
+                {processedSynopsis && (
                   <p className="text-sm text-gray-600 dark:text-gray-400 overflow-hidden" style={{
                     display: '-webkit-box',
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: 'vertical'
                   }}>
-                    {anime.synopsis}
+                    {processedSynopsis}
                   </p>
                 )}
               </div>

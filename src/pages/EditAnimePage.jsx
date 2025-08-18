@@ -2,10 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getAnimeDetailsById } from '../services/jikanService';
 import { Star } from 'lucide-react';
+import { processSynopsis } from '../services/translationService';
+import { useLanguage } from '../components/contexts/LanguageContext';
 
 const EditAnimePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { language } = useLanguage();
   const [anime, setAnime] = useState(null);
   const [userRating, setUserRating] = useState(0);
   const [userOpinion, setUserOpinion] = useState('');
@@ -81,7 +84,7 @@ const EditAnimePage = () => {
   const displayImage = anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || '';
   const displayTitle = anime.title || 'N/A';
   const displayJapaneseTitle = anime.title_japanese || 'N/A';
-  const displaySynopsis = anime.synopsis ? anime.synopsis.replace(/\n/g, '\n\n') : 'N/A';
+  const { text: displaySynopsis } = processSynopsis(anime.synopsis, language);
   const displayClassification = anime.rating || 'N/A';
   const displayPopularity = anime.popularity ? `#${anime.popularity}` : 'N/A';
   const displayTrailerId = anime.trailer?.youtube_id;
