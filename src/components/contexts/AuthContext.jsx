@@ -1,5 +1,6 @@
 import React, { createContext, useEffect, useMemo, useState } from 'react';
 import { auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged } from '../../services/auth/firebase';
+import { useNotification } from './NotificationContext';
 
 // Initial state
 const AUTH_INITIAL_STATE = {
@@ -98,21 +99,43 @@ const getUserAge = (user) => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { showError, showSuccess } = useNotification();
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (current) => {
       setUser(current);
       setLoading(false);
     });
-    return () => unsub();
+    
+    // Timeout de segurança para evitar loading infinito
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 3000);
+    
+    return () => {
+      unsub();
+      clearTimeout(timeout);
+    };
   }, []);
 
   const signInWithGoogle = async () => {
-    await signInWithPopup(auth, googleProvider);
+    try {
+      await signInWithPopup(auth, googleProvider);
+      showSuccess('Login realizado com sucesso!');
+    } catch (error) {
+      console.error('Erro no login:', error);
+      showError(`Erro no login: ${error.message}`);
+    }
   };
 
   const logout = async () => {
-    await signOut(auth);
+    try {
+      await signOut(auth);
+      showSuccess('Logout realizado com sucesso!');
+    } catch (error) {
+      console.error('Erro no logout:', error);
+      showError(`Erro no logout: ${error.message}`);
+    }
   };
 
   // Verifica se o usuário pode acessar conteúdo adulto

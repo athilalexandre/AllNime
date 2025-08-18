@@ -31,24 +31,48 @@ const validateFirebaseConfig = (config) => {
     }, 'firebase');
   }
   
+  // In development mode, allow fallback configuration
+  if (import.meta.env.DEV && config.apiKey.includes('XXXXXXXXXXXXXXXX')) {
+    logger.warn('Using development fallback Firebase configuration', {
+      suggestion: 'Configure real Firebase credentials for full functionality'
+    }, 'firebase');
+  }
+  
   return true;
 };
 
 // Get Firebase configuration from environment variables
 const getFirebaseConfig = () => {
-  const config = {
+  // Try to get from environment variables first
+  let config = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
     projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
     appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
   };
 
+  // If environment variables are not set, use development fallback
+  if (!config.apiKey || config.apiKey === '') {
+    logger.warn('Firebase environment variables not found, using development fallback', {
+      environment: import.meta.env.MODE,
+      suggestion: 'Create a .env file with your Firebase configuration'
+    }, 'firebase');
+    
+    config = {
+      apiKey: "AIzaSyBXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      authDomain: "allnime-app.firebaseapp.com",
+      projectId: "allnime-app",
+      appId: "1:123456789:web:abcdef123456"
+    };
+  }
+
   logger.info('Loading Firebase Configuration', {
     hasApiKey: !!config.apiKey,
     hasAuthDomain: !!config.authDomain,
     hasProjectId: !!config.projectId,
     hasAppId: !!config.appId,
-    environment: import.meta.env.MODE
+    environment: import.meta.env.MODE,
+    usingFallback: !import.meta.env.VITE_FIREBASE_API_KEY
   }, 'firebase');
 
   return config;
@@ -111,6 +135,11 @@ try {
   googleProvider = null;
 }
 
+// Check if Firebase is properly initialized
+const isFirebaseInitialized = () => {
+  return app !== null && auth !== null && googleProvider !== null;
+};
+
 // Enhanced error handling for Firebase operations
 const handleFirebaseError = (error, operation, context = '') => {
   logFirebaseError(error, `${operation} - ${context}`);
@@ -150,11 +179,12 @@ const handleFirebaseError = (error, operation, context = '') => {
 
 // Enhanced sign-in function with logging
 const enhancedSignInWithPopup = async (context = '') => {
-  if (!auth || !googleProvider) {
+  if (!isFirebaseInitialized()) {
     const error = new Error('Firebase not initialized');
     logger.error('Sign-in attempted before Firebase initialization', {
       error: error.message,
-      context: context
+      context: context,
+      suggestion: 'Check Firebase configuration and ensure all required environment variables are set'
     }, 'firebase');
     throw error;
   }
@@ -185,11 +215,12 @@ const enhancedSignInWithPopup = async (context = '') => {
 
 // Enhanced sign-out function with logging
 const enhancedSignOut = async (context = '') => {
-  if (!auth) {
+  if (!isFirebaseInitialized()) {
     const error = new Error('Firebase not initialized');
     logger.error('Sign-out attempted before Firebase initialization', {
       error: error.message,
-      context: context
+      context: context,
+      suggestion: 'Check Firebase configuration and ensure all required environment variables are set'
     }, 'firebase');
     throw error;
   }
@@ -213,9 +244,10 @@ const enhancedSignOut = async (context = '') => {
 
 // Enhanced auth state change listener with logging
 const enhancedOnAuthStateChanged = (callback, context = '') => {
-  if (!auth) {
+  if (!isFirebaseInitialized()) {
     logger.error('Auth state listener attempted before Firebase initialization', {
-      context: context
+      context: context,
+      suggestion: 'Check Firebase configuration and ensure all required environment variables are set'
     }, 'firebase');
     return () => {}; // Return no-op unsubscribe function
   }

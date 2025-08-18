@@ -1,6 +1,9 @@
 // src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './components/contexts/AuthContext';
+import { LanguageProvider } from './components/contexts/LanguageContext';
+import { NotificationProvider } from './components/contexts/NotificationContext';
 import HomePage from './pages/HomePage';
 import AnimeDetailPage from './pages/AnimeDetailPage';
 import EditAnimePage from './pages/EditAnimePage';
@@ -180,27 +183,33 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <Router>
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/anime/:id" element={<AnimeDetailPage />} />
-              <Route path="/anime/:id/edit" element={<EditAnimePage />} />
-              <Route path="/my-ratings" element={<MyRatingsPage />} />
-              <Route path="/plan-to-watch" element={<PlanToWatchPage />} />
-              <Route path="/watching" element={<WatchingPage />} />
-              <Route path="/completed" element={<CompletedPage />} />
-              <Route path="/dropped" element={<DroppedPage />} />
-              <Route path="/explore" element={<ExplorePage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/test" element={<TestComponent />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </main>
-        </div>
-      </Router>
+      <NotificationProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <Router>
+            <div className="flex flex-col min-h-screen">
+              <Header />
+              <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/anime/:id" element={<AnimeDetailPage />} />
+                  <Route path="/anime/:id/edit" element={<EditAnimePage />} />
+                  <Route path="/my-ratings" element={<MyRatingsPage />} />
+                  <Route path="/plan-to-watch" element={<PlanToWatchPage />} />
+                  <Route path="/watching" element={<WatchingPage />} />
+                  <Route path="/completed" element={<CompletedPage />} />
+                  <Route path="/dropped" element={<DroppedPage />} />
+                  <Route path="/explore" element={<ExplorePage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/test" element={<TestComponent />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </main>
+            </div>
+                      </Router>
+          </AuthProvider>
+        </LanguageProvider>
+      </NotificationProvider>
     </ErrorBoundary>
   );
 }

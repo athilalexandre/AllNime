@@ -1,11 +1,55 @@
 import axios from 'axios';
+import logger from './loggerService.js';
 
 const API_BASE_URL = 'https://api.jikan.moe/v4';
 
-// Configuração do axios com timeout
+// Configuração do axios com timeout e retry
 const axiosInstance = axios.create({
   timeout: 15000, // 15 segundos de timeout
 });
+
+// Interceptor para logging de requisições
+axiosInstance.interceptors.request.use(
+  (config) => {
+    logger.debug('Jikan API Request', { 
+      url: config.url,
+      method: config.method,
+      params: config.params
+    }, 'api');
+    return config;
+  },
+  (error) => {
+    logger.error('Jikan API Request Error', { error: error.message }, 'api');
+    return Promise.reject(error);
+  }
+);
+
+// Interceptor para logging de respostas
+axiosInstance.interceptors.response.use(
+  (response) => {
+    logger.debug('Jikan API Response', { 
+      url: response.config.url,
+      status: response.status,
+      dataLength: response.data?.data?.length || 0
+    }, 'api');
+    return response;
+  },
+  (error) => {
+    if (error.response?.status === 429) {
+      logger.warn('Jikan API Rate Limit Atingido', { 
+        url: error.config?.url,
+        retryAfter: error.response.headers['retry-after'] || 'unknown'
+      }, 'api');
+    } else {
+      logger.error('Jikan API Response Error', { 
+        url: error.config?.url,
+        status: error.response?.status,
+        error: error.message
+      }, 'api');
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const searchAnimes = async (query, options = {}, canAccessAdultContent = false) => {
   if (!query || query.trim() === '') {
