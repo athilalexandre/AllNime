@@ -53,20 +53,29 @@ const TopRatedAnimeBlock = () => {
   }
 
   return (
-    <Swiper
-      modules={[Navigation, Autoplay]}
-      slidesPerView={4}
-      spaceBetween={20}
-      navigation
-      autoplay={{ delay: 2500, disableOnInteraction: false }}
-      loop
-      breakpoints={{
-        320: { slidesPerView: 1.2 },
-        640: { slidesPerView: 2.2 },
-        1024: { slidesPerView: 4 },
-      }}
-      className="!pb-8"
-    >
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Animes Mais Bem Avaliados
+        </h2>
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          {animes.length} animes encontrados
+        </div>
+      </div>
+      <Swiper
+        modules={[Navigation, Autoplay]}
+        slidesPerView={4}
+        spaceBetween={20}
+        navigation
+        autoplay={{ delay: 2500, disableOnInteraction: false }}
+        loop
+        breakpoints={{
+          320: { slidesPerView: 1.2 },
+          640: { slidesPerView: 2.2 },
+          1024: { slidesPerView: 4 },
+        }}
+        className="!pb-8"
+      >
       {animes.map(anime => (
         <SwiperSlide key={anime.mal_id} className="overflow-hidden rounded-lg">
           <Link to={`/anime/${anime.mal_id}`} className="block group focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark h-full">
@@ -96,7 +105,8 @@ const TopRatedAnimeBlock = () => {
           </Link>
         </SwiperSlide>
       ))}
-    </Swiper>
+      </Swiper>
+    </div>
   );
 };
 

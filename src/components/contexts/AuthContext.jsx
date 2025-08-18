@@ -102,28 +102,39 @@ export const AuthProvider = ({ children }) => {
   const { showError, showSuccess } = useNotification();
 
   useEffect(() => {
+    console.log('AuthContext: Setting up auth state listener');
+    
     const unsub = onAuthStateChanged(auth, (current) => {
+      console.log('AuthContext: Auth state changed', { 
+        user: current ? { uid: current.uid, email: current.email, displayName: current.displayName } : null 
+      });
       setUser(current);
       setLoading(false);
     });
     
     // Timeout de segurança para evitar loading infinito
     const timeout = setTimeout(() => {
+      console.log('AuthContext: Loading timeout reached');
       setLoading(false);
     }, 3000);
     
     return () => {
+      console.log('AuthContext: Cleaning up auth listener');
       unsub();
       clearTimeout(timeout);
     };
   }, []);
 
   const signInWithGoogle = async () => {
+    console.log('AuthContext: Starting Google sign-in');
     try {
-      await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log('AuthContext: Google sign-in successful', { 
+        user: result.user ? { uid: result.user.uid, email: result.user.email, displayName: result.user.displayName } : null 
+      });
       showSuccess('Login realizado com sucesso!');
     } catch (error) {
-      console.error('Erro no login:', error);
+      console.error('AuthContext: Google sign-in error:', error);
       
       // Handle different error types
       if (error && error.userMessage) {

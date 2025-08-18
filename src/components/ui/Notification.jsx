@@ -43,7 +43,7 @@ const Notification = ({ message, type = 'info', duration = 5000, onClose }) => {
   if (!isVisible) return null;
 
   return (
-    <div className={`fixed top-4 right-4 z-[9999] max-w-sm w-full ${getBgColor()} border rounded-lg shadow-lg p-4 transition-all duration-300 transform ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
+    <div className={`fixed bottom-4 right-4 z-[9999] max-w-sm w-full ${getBgColor()} border rounded-lg shadow-lg p-4 transition-all duration-300 transform ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
       <div className="flex items-start space-x-3">
         {getIcon()}
         <div className="flex-1 min-w-0">

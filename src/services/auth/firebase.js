@@ -64,6 +64,13 @@ const getFirebaseConfig = () => {
       projectId: "allnime-app",
       appId: "1:123456789:web:abcdef123456"
     };
+  } else {
+    logger.info('Firebase environment variables loaded successfully', {
+      hasApiKey: !!config.apiKey,
+      apiKeyLength: config.apiKey.length,
+      authDomain: config.authDomain,
+      projectId: config.projectId
+    }, 'firebase');
   }
 
   logger.info('Loading Firebase Configuration', {

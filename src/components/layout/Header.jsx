@@ -30,7 +30,7 @@ const Header = () => {
         <div className="container mx-auto px-2 sm:px-4 lg:px-6 overflow-visible">
           <div className="flex items-center py-3 sm:py-4 overflow-visible">
             {/* Logo */}
-            <Link to="/" className="text-lg sm:text-xl lg:text-2xl font-bold text-primary-light dark:text-primary-dark transition-colors hover:opacity-80 flex-shrink-0">
+            <Link to="/" className="text-lg sm:text-xl lg:text-2xl font-bold transition-colors hover:opacity-80 flex-shrink-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-pulse">
               AllNime
             </Link>
             
