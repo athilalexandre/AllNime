@@ -6,7 +6,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 const AnimeCard = ({ anime, viewMode = 'grid' }) => {
   const { language, translate } = useLanguage();
-  
+
   const handleImageError = (e) => {
     e.target.onerror = null;
     e.target.src = 'https://via.placeholder.com/250x350?text=No+Image';
@@ -28,7 +28,7 @@ const AnimeCard = ({ anime, viewMode = 'grid' }) => {
               onError={handleImageError}
             />
           </div>
-          
+
           {/* Conteúdo */}
           <div className="flex-1 p-4">
             <div className="flex items-start justify-between">
@@ -36,7 +36,7 @@ const AnimeCard = ({ anime, viewMode = 'grid' }) => {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 truncate">
                   {anime.title}
                 </h3>
-                
+
                 <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
                   {anime.type && (
                     <span className="capitalize bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
@@ -56,18 +56,14 @@ const AnimeCard = ({ anime, viewMode = 'grid' }) => {
                     </span>
                   )}
                 </div>
-                
+
                 {processedSynopsis && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 overflow-hidden" style={{
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical'
-                  }}>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                     {processedSynopsis}
                   </p>
                 )}
               </div>
-              
+
               {/* Score e Ações */}
               <div className="flex flex-col items-end space-y-2 ml-4">
                 {anime.score && (
@@ -76,7 +72,7 @@ const AnimeCard = ({ anime, viewMode = 'grid' }) => {
                     {anime.score}
                   </div>
                 )}
-                
+
                 <Link
                   to={`/anime/${anime.mal_id}`}
                   className="inline-flex items-center space-x-1 px-3 py-2 bg-primary-light hover:bg-primary-dark text-white text-sm font-medium rounded-md transition-colors"
@@ -103,7 +99,7 @@ const AnimeCard = ({ anime, viewMode = 'grid' }) => {
           className="w-full h-64 object-cover"
           onError={handleImageError}
         />
-        
+
         {/* Overlay com informações */}
         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center">
           <div className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-center">
@@ -123,9 +119,9 @@ const AnimeCard = ({ anime, viewMode = 'grid' }) => {
         {/* Status */}
         {anime.status && (
           <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-            {anime.status === 'Currently Airing' ? translate('Em Exibição') : 
-             anime.status === 'Finished Airing' ? translate('Finalizado') : 
-             anime.status === 'Not yet aired' ? translate('Não Exibido') : anime.status}
+            {anime.status === 'Currently Airing' ? translate('Em Exibição') :
+              anime.status === 'Finished Airing' ? translate('Finalizado') :
+                anime.status === 'Not yet aired' ? translate('Não Exibido') : anime.status}
           </div>
         )}
       </div>
@@ -135,7 +131,7 @@ const AnimeCard = ({ anime, viewMode = 'grid' }) => {
         <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-2 truncate" title={anime.title}>
           {anime.title}
         </h3>
-        
+
         <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
           {anime.type && (
             <p className="capitalize flex items-center space-x-1">
@@ -143,14 +139,14 @@ const AnimeCard = ({ anime, viewMode = 'grid' }) => {
               {anime.type}
             </p>
           )}
-          
+
           {anime.episodes && (
             <p className="flex items-center space-x-1">
               <TrendingUp className="w-3 h-3" />
               {anime.episodes} {translate('episódios')}
             </p>
           )}
-          
+
           {anime.year && (
             <p className="flex items-center space-x-1">
               <Calendar className="w-3 h-3" />

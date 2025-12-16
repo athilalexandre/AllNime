@@ -17,41 +17,41 @@ export const AuthContext = createContext(AUTH_INITIAL_STATE);
 // Utility functions
 const checkUserAge = (user) => {
   if (!user) return false;
-  
+
   try {
     // Verificar se o usuário tem idade suficiente (18+)
     // Primeiro, tentar obter a data de nascimento do perfil do Google
     if (user.providerData && user.providerData.length > 0) {
       const googleProfile = user.providerData.find(provider => provider.providerId === 'google.com');
-      
+
       if (googleProfile && googleProfile.birthday) {
         // Calcular idade baseada na data de nascimento
         const birthDate = new Date(googleProfile.birthday);
         const today = new Date();
         let age = today.getFullYear() - birthDate.getFullYear();
         const monthDiff = today.getMonth() - birthDate.getMonth();
-        
+
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
           age--;
         }
-        
+
         return age >= 18;
       }
     }
-    
+
     // Se não conseguir obter a data de nascimento, verificar se o usuário tem pelo menos 18 anos
     // baseado na data de criação da conta (assumindo que usuários muito novos não são adultos)
     if (user.metadata && user.metadata.creationTime) {
       const creationDate = new Date(user.metadata.creationTime);
       const today = new Date();
       const accountAge = today.getFullYear() - creationDate.getFullYear();
-      
+
       // Se a conta foi criada há mais de 18 anos, provavelmente o usuário é adulto
       if (accountAge >= 18) {
         return true;
       }
     }
-    
+
     // Por padrão, para usuários logados, assumimos que são adultos
     // mas em produção você deve implementar uma verificação mais rigorosa
     return true;
@@ -69,25 +69,25 @@ const canUserAccessAdultContent = (user) => {
 
 const getUserAge = (user) => {
   if (!user) return null;
-  
+
   try {
     if (user.providerData && user.providerData.length > 0) {
       const googleProfile = user.providerData.find(provider => provider.providerId === 'google.com');
-      
+
       if (googleProfile && googleProfile.birthday) {
         const birthDate = new Date(googleProfile.birthday);
         const today = new Date();
         let age = today.getFullYear() - birthDate.getFullYear();
         const monthDiff = today.getMonth() - birthDate.getMonth();
-        
+
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
           return age - 1;
         }
-        
+
         return age;
       }
     }
-    
+
     return null;
   } catch (error) {
     console.error('Erro ao calcular idade do usuário:', error);
@@ -107,18 +107,18 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
       return;
     }
-    
+
     try {
       const unsub = onAuthStateChanged((current) => {
         setUser(current);
         setLoading(false);
       }, 'AuthContext');
-      
+
       // Timeout de segurança para evitar loading infinito
       const timeout = setTimeout(() => {
         setLoading(false);
       }, 3000);
-      
+
       return () => {
         if (unsub && typeof unsub === 'function') {
           unsub();
@@ -133,11 +133,11 @@ export const AuthProvider = ({ children }) => {
 
   const signInWithGoogle = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
+      await signInWithPopup(auth, googleProvider);
       showSuccess('Login realizado com sucesso!');
     } catch (error) {
       console.error('AuthContext: Google sign-in error:', error);
-      
+
       // Handle different error types
       if (error && error.userMessage) {
         showError(`Erro no login: ${error.userMessage}`);
@@ -155,7 +155,7 @@ export const AuthProvider = ({ children }) => {
       showSuccess('Logout realizado com sucesso!');
     } catch (error) {
       console.error('Erro no logout:', error);
-      
+
       // Handle different error types
       if (error && error.userMessage) {
         showError(`Erro no logout: ${error.userMessage}`);
@@ -184,12 +184,12 @@ export const AuthProvider = ({ children }) => {
     return getUserAge(user);
   }, [user]);
 
-  const value = useMemo(() => ({ 
-    user, 
-    loading, 
-    signInWithGoogle, 
-    logout, 
-    canAccessAdultContent, 
+  const value = useMemo(() => ({
+    user,
+    loading,
+    signInWithGoogle,
+    logout,
+    canAccessAdultContent,
     isUserAdult,
     userAge
   }), [user, loading, canAccessAdultContent, isUserAdult, userAge]);

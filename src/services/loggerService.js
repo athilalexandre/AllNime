@@ -12,7 +12,7 @@ class LoggerService {
       ERROR: 3,
       CRITICAL: 4
     };
-    
+
     this.currentLevel = this.logLevels.INFO;
     this.maxLogs = 1000; // Prevent memory leaks
     this.logs = [];
@@ -22,7 +22,7 @@ class LoggerService {
       'consumet': { limit: 100, window: 60000 }, // 100 calls per minute
       'firebase': { limit: 1000, window: 60000 } // 1000 calls per minute
     };
-    
+
     this.init();
   }
 
@@ -39,12 +39,12 @@ class LoggerService {
 
     // Set up global error handler
     this.setupGlobalErrorHandling();
-    
+
     // Set up API monitoring
     this.setupAPIMonitoring();
-    
+
     // Log service initialization
-    this.info('LoggerService initialized', { 
+    this.info('LoggerService initialized', {
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       url: window.location.href
@@ -89,11 +89,11 @@ class LoggerService {
     window.fetch = async (...args) => {
       const startTime = Date.now();
       const url = args[0];
-      
+
       try {
         const response = await originalFetch(...args);
         const duration = Date.now() - startTime;
-        
+
         this.logAPICall(url, response.status, duration, 'success');
         return response;
       } catch (error) {
@@ -105,7 +105,7 @@ class LoggerService {
 
     // Monitor Axios calls if available
     if (window.axios) {
-      const originalAxios = window.axios;
+      // const originalAxios = window.axios;
       window.axios.interceptors.request.use(
         (config) => {
           config.metadata = { startTime: Date.now() };
@@ -133,7 +133,7 @@ class LoggerService {
 
   logAPICall(url, status, duration, result, error = null) {
     const apiName = this.getAPIName(url);
-    
+
     if (!this.apiCallCounts[apiName]) {
       this.apiCallCounts[apiName] = {
         calls: 0,
@@ -155,7 +155,7 @@ class LoggerService {
     const limit = this.apiLimits[apiName];
     if (limit) {
       const timeSinceReset = Date.now() - apiStats.lastReset;
-      
+
       if (timeSinceReset > limit.window) {
         // Reset counter
         apiStats.calls = 1;
@@ -213,7 +213,7 @@ class LoggerService {
 
     // Add to logs array
     this.logs.push(logEntry);
-    
+
     // Keep only the last maxLogs entries
     if (this.logs.length > this.maxLogs) {
       this.logs = this.logs.slice(-this.maxLogs);
@@ -222,7 +222,7 @@ class LoggerService {
     // Console output based on level
     const consoleMethod = this.getConsoleMethod(level);
     const prefix = `[${level.toUpperCase()}] [${timestamp}]`;
-    
+
     if (data) {
       console[consoleMethod](`${prefix} ${message}`, data);
     } else {
@@ -329,7 +329,7 @@ class LoggerService {
             context: context
           }, 'firebase');
           break;
-        
+
         case 'auth/network-request-failed':
           this.warn('Firebase Network Error', {
             error: error,
@@ -337,7 +337,7 @@ class LoggerService {
             context: context
           }, 'firebase');
           break;
-        
+
         case 'auth/quota-exceeded':
           this.warn('Firebase Quota Exceeded', {
             error: error,
@@ -388,11 +388,11 @@ class LoggerService {
   // Get logs for debugging
   getLogs(level = null, limit = 100) {
     let filteredLogs = this.logs;
-    
+
     if (level) {
       filteredLogs = this.logs.filter(log => log.level === level);
     }
-    
+
     return filteredLogs.slice(-limit);
   }
 

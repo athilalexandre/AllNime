@@ -73,10 +73,10 @@ export const localizeAnimeFields = (anime, language = 'pt') => {
 // Função para processar sinopse e remover duplicidades de créditos
 export const processSynopsis = (synopsis, language = 'pt') => {
 	if (!synopsis) return { text: '', credit: '' };
-	
+
 	// Remove tags HTML
 	const cleanText = synopsis.replace(/<[^>]*>?/gm, '');
-	
+
 	// Padrões de crédito em diferentes idiomas
 	const creditPatterns = [
 		/\[Escrito por .*?\]/i, // Português
@@ -89,10 +89,10 @@ export const processSynopsis = (synopsis, language = 'pt') => {
 		/\[작성자: .*?\]/i,      // Coreano
 		/\[作者: .*?\]/i,        // Chinês
 	];
-	
+
 	let credit = '';
 	let processedText = cleanText;
-	
+
 	// Procura por qualquer padrão de crédito
 	for (const pattern of creditPatterns) {
 		const match = cleanText.match(pattern);
@@ -104,10 +104,10 @@ export const processSynopsis = (synopsis, language = 'pt') => {
 			break;
 		}
 	}
-	
+
 	// Formata quebras de linha
 	processedText = processedText.replace(/\n/g, '\n\n');
-	
+
 	return {
 		text: processedText,
 		credit: credit
@@ -128,7 +128,7 @@ export const translateTextSafe = async (text, targetLang = 'pt') => {
 			return data[0].map((seg) => seg[0]).join('');
 		}
 		return text;
-	} catch (_) {
+	} catch {
 		return text;
 	}
 };
